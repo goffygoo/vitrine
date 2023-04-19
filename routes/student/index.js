@@ -3,7 +3,7 @@ import express from "express";
 import classAction from "./classAction.js"
 import { USER_ID } from "./../../constants/header.js"
 import User from "../../model/User.js";
-import Teacher from "../../model/Teacher.js";
+import Student from "../../model/Student.js";
 import ClassModel from "../../model/ClassModel.js";
 import db from "../../util/db.js";
 
@@ -15,38 +15,38 @@ router.get("/", (_req, res) => {
     })
 });
 
-const validateTeacher = async (req, res, next) => {
+const validateStudent = async (req, res, next) => {
     // const id = req.headers[USER_ID]
 
     // const user = await User.findById(id).select({
     //     "type": 1
     // })
 
-    // if (!user || user.type !== "TEACHER") {
+    // if (!user || user.type !== "STUDENT") {
     //     return res.status(400).send({
     //         success: false,
-    //         message: "Not a valid teacher profile",
+    //         message: "Not a valid student profile",
     //     });
     // }
 
     next()
 }
 
-router.use("/class", validateTeacher, classAction)
+router.use("/class", validateStudent, classAction)
 
-router.get("/getAllClasses", validateTeacher, async (req, res) => {
+router.get("/getAllClasses", validateStudent, async (req, res) => {
     const id = req.query.id;
 
-    const teacher = await Teacher.findById(id).select({
+    const student = await Student.findById(id).select({
         "classes": 1
     });
 
-    if (!teacher) return res.status(401).send({
+    if (!student) return res.status(401).send({
         success: false,
-        message: "Could not find the teacher",
+        message: "Could not find the student",
     })
 
-    const idList = teacher.classes
+    const idList = student.classes
 
     const classes = await ClassModel.find({
         '_id': {
@@ -59,29 +59,27 @@ router.get("/getAllClasses", validateTeacher, async (req, res) => {
     })
 })
 
-router.post("/createClass", async (req, res) => {
-    const { teacher_id, title } = req.body
+router.post("/joinClass", validateStudent, async (req, res) => {
+    const { student_id, class_id } = req.body
 
-    let session = null, classObj;
+    let session = null;
 
     db.startSession().then((_session) => {
         session = _session;
 
         session.startTransaction();
-        return ClassModel.create([{
-            title,
-            teacher: teacher_id
-        }], { session });
-    }).then(([arg]) => {
-        classObj = arg
+        return Student.findByIdAndUpdate(student_id, {
+            $push: { classes: class_id }
+        })
+    }).then(() => {
 
-        return Teacher.findByIdAndUpdate(teacher_id, {
-            $push: { classes: classObj._id }
+        return ClassModel.findByIdAndUpdate(class_id, {
+            $push: { students: student_id }
         })
     }).then(() => {
         return session.commitTransaction()
     }).then(() => {
-        return res.send({ class: classObj });
+        return res.send({ success: true });
     }).catch((err) => {
         res.status(400).send({
             success: false,

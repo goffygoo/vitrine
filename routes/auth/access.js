@@ -9,7 +9,7 @@ const ACCESS_TOKEN_EXPIRE_TIME = '30m';
 const router = express.Router();
 
 router.get("/", (_req, res) => {
-    res.send({
+    return res.send({
         "health": "OK"
     })
 })
