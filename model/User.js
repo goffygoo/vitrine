@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import { USER_TYPES } from '../constants/index.js'
 
 const Schema = new mongoose.Schema({
     email: {
@@ -12,7 +13,7 @@ const Schema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ["TEACHER", "STUDENT", "ADMIN"],
+        enum: [USER_TYPES.TEACHER, USER_TYPES.STUDENT, USER_TYPES.ADMIN],
         required: true,
     },
     refreshToken: {

@@ -1,4 +1,5 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
+import Address from './Schema/Address.js';
 
 const { ObjectId } = mongoose.Schema.Types
 
@@ -10,6 +11,9 @@ const Schema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
+    },
+    address: {
+        type: Address,
     },
     classes: {
         type: [ObjectId],

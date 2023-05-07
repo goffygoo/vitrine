@@ -8,6 +8,8 @@ import jwt from 'jsonwebtoken'
 import TempLink from "../../model/TempLink.js";
 import Teacher from "../../model/Teacher.js";
 import Student from "../../model/Student.js";
+import { USER_TYPES } from "../../constants/index.js";
+import { processPassword } from "../../util/index.js";
 
 const SECRET = "SECRET";
 
@@ -27,7 +29,7 @@ router.get("/", (_req, res) => {
 })
 
 router.post("/signup", async (req, res) => {
-    const { name = "New User", email, password, type } = req.body
+    const { name = "New User", email, password, type } = req.body;
 
     const userCheck = await User.findOne({ email });
 
@@ -50,7 +52,7 @@ router.post("/signup", async (req, res) => {
         });
     }
 
-    if (!(type === "TEACHER" || type === "STUDENT")) {
+    if (!(type === USER_TYPES.TEACHER || type === USER_TYPES.STUDENT)) {
         return res.status(400).send({
             success: false,
             message: "Invalid user type",
@@ -60,7 +62,7 @@ router.post("/signup", async (req, res) => {
     const token = await TempToken.create({
         name,
         email,
-        password,
+        password: processPassword(password),
         type,
         token: randomUUID()
     });
@@ -75,7 +77,7 @@ router.post("/signup", async (req, res) => {
 })
 
 router.post("/login", async (req, res) => {
-    const { email, password } = req.body
+    const { email, password } = req.body;
 
     const user = await User.findOne({ email });
 
@@ -86,7 +88,7 @@ router.post("/login", async (req, res) => {
         });
     }
 
-    if (password != user.password) {
+    if (processPassword(password) != user.password) {
         return res.status(401).send({
             success: false,
             message: "Password Invalid",
@@ -139,16 +141,18 @@ router.post("/verify", async (req, res) => {
             tokenEAT: (Date.now() + REFRESH_TOKEN_EXPIRE_TIME)
         }], { session })
     }).then(([userData]) => {
-        if (userData.type === 'TEACHER') {
+        if (userData.type === USER_TYPES.TEACHER) {
             return Teacher.create([{
                 userId: userData._id,
                 name
             }], { session })
-        } else {
+        } else if (userData.type === USER_TYPES.STUDENT)  {
             return Student.create([{
                 userId: userData._id,
                 name
             }], { session })
+        } else {
+            throw Error("Invalid Request");
         }
     }).then(() => {
         return session.commitTransaction()
@@ -160,7 +164,8 @@ router.post("/verify", async (req, res) => {
     }).catch((err) => {
         res.status(400).send({
             success: false,
-            message: `Something went error: ${err}`,
+            message: `Something went wrong`,
+            err
         });
         return session.abortTransaction()
     }).finally(() => {
@@ -231,7 +236,7 @@ router.post("/resetPassword", async (req, res) => {
         if (!user) throw Error("Invalid token");
 
         return User.findByIdAndUpdate(user._id, {
-            password,
+            password: processPassword(password),
             refreshToken: generateToken(),
             tokenEAT: (Date.now() + REFRESH_TOKEN_EXPIRE_TIME)
         }).session(session)

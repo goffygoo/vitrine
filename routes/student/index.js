@@ -1,11 +1,13 @@
 import express from "express";
-
-import classAction from "./classAction.js"
-import { USER_ID } from "./../../constants/header.js"
+import classAction from "./classAction.js";
+import profile from "./profile.js";
+import { HEADERS, USER_TYPES } from "./../../constants/index.js";
 import User from "../../model/User.js";
 import Student from "../../model/Student.js";
 import ClassModel from "../../model/ClassModel.js";
 import db from "../../util/db.js";
+
+const { USER_ID } = HEADERS;
 
 const router = express.Router();
 
@@ -22,7 +24,7 @@ const validateStudent = async (req, res, next) => {
     //     "type": 1
     // })
 
-    // if (!user || user.type !== "STUDENT") {
+    // if (!user || user.type !== USER_TYPES.STUDENT) {
     //     return res.status(400).send({
     //         success: false,
     //         message: "Not a valid student profile",
@@ -32,7 +34,8 @@ const validateStudent = async (req, res, next) => {
     next()
 }
 
-router.use("/class", validateStudent, classAction)
+router.use("/class", validateStudent, classAction);
+router.use("/profile", profile);
 
 router.get("/getAllClasses", validateStudent, async (req, res) => {
     const id = req.query.id;
