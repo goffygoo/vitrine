@@ -43,10 +43,10 @@ router.post("/newAccessToken", async (req, res) => {
 })
 
 router.post("/logoutEverywhere", async (req, res) => {
-    const { id } = req.body;
+    const { email } = req.body;
 
     try {
-        await User.findByIdAndUpdate(id, {
+        await User.findOneAndUpdate({email}, {
             refreshToken: "",
             tokenEAT: 0
         })
