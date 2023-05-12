@@ -138,7 +138,6 @@ router.post("/verify", async (req, res) => {
             password: userData.password,
             type: userData.type,
             refreshToken: generateToken(),
-            tokenEAT: (Date.now() + REFRESH_TOKEN_EXPIRE_TIME)
         }], { session })
     }).then(([userData]) => {
         if (userData.type === USER_TYPES.TEACHER) {
