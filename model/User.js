@@ -19,6 +19,9 @@ const Schema = new mongoose.Schema({
     refreshToken: {
         type: String,
     },
+    tokenEAT: {
+        type: Number
+    }
 })
 
 export default mongoose.model('User', Schema)
