@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 const PASSWORD_SALT = 'PASSWORD_SALT';
 
 export const processPassword = password => {
