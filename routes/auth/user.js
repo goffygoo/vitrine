@@ -108,6 +108,7 @@ router.post("/login", async (req, res) => {
 
   const payload = {
     id: user._id.toString(),
+    profileId: user.profileId.toString(),
     type: user.type,
   };
 
@@ -116,17 +117,21 @@ router.post("/login", async (req, res) => {
   });
 
   return res.status(201).send({
-    success: true,
-    message: "Logged In Successfully",
     accessToken,
     refreshToken,
     type: user.type,
+    userId: payload.id,
+    profileId: payload.profileId,
   });
 });
 
 router.post("/verify", async (req, res) => {
   let session = null,
-    name = "";
+    name = "",
+    userId,
+    profileId,
+    type;
+  const refreshToken = generateToken();
 
   db.startSession()
     .then((_session) => {
@@ -147,7 +152,7 @@ router.post("/verify", async (req, res) => {
             email: userData.email,
             password: userData.password,
             type: userData.type,
-            refreshToken: generateToken(),
+            refreshToken,
             tokenEAT: Date.now() + REFRESH_TOKEN_EXPIRE_TIME,
           },
         ],
@@ -155,7 +160,8 @@ router.post("/verify", async (req, res) => {
       );
     })
     .then(([userData]) => {
-      if (userData.type === USER_TYPES.TEACHER) {
+      type = userData.type;
+      if (type === USER_TYPES.TEACHER) {
         return Teacher.create(
           [
             {
@@ -165,7 +171,7 @@ router.post("/verify", async (req, res) => {
           ],
           { session }
         );
-      } else if (userData.type === USER_TYPES.STUDENT) {
+      } else if (type === USER_TYPES.STUDENT) {
         return Student.create(
           [
             {
@@ -179,16 +185,32 @@ router.post("/verify", async (req, res) => {
         throw Error("Invalid Request");
       }
     })
+    .then(([profile]) => {
+      const id = profile.userId;
+      userId = id;
+      profileId = profile._id.toString();
+      return User.findByIdAndUpdate(id, { profileId: id }).session(session);
+    })
     .then(() => {
       return session.commitTransaction();
     })
     .then(() => {
+      const payload = { userId, profileId, type };
+
+      const accessToken = jwt.sign(payload, SECRET, {
+        expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
+      });
+
       return res.status(201).send({
-        success: true,
-        message: `Your email is verified, Please login again`,
+        accessToken,
+        refreshToken,
+        userId,
+        profileId,
+        type,
       });
     })
     .catch((err) => {
+      console.log(err);
       res.status(400).send({
         success: false,
         message: `Something went wrong`,
