@@ -7,3 +7,8 @@ export const USER_TYPES = {
     STUDENT: "STUDENT",
     ADMIN: "ADMIN"
 }
+
+export const EVENT_TYPES = {
+    CALL: "CALL",
+    EXAM: "EXAM",
+}
