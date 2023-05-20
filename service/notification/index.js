@@ -1,7 +1,7 @@
-import Events from "./event";
+import Events from "./event.js";
 
 const Notif = {
-    Events
-}
+  Events,
+};
 
 export default Notif;
