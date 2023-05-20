@@ -51,7 +51,6 @@ router.post("/signup", async (req, res) => {
       email,
     });
   }
-
   if (!(type === USER_TYPES.TEACHER || type === USER_TYPES.STUDENT)) {
     return res.status(400).send({
       success: false,
@@ -122,12 +121,14 @@ router.post("/login", async (req, res) => {
     type: user.type,
     userId: payload.id,
     profileId: payload.profileId,
+    email: user.email,
   });
 });
 
 router.post("/verify", async (req, res) => {
   let session = null,
     name = "",
+    email,
     userId,
     profileId,
     type;
@@ -146,6 +147,7 @@ router.post("/verify", async (req, res) => {
       if (!userData) throw Error("Invalid token");
 
       name = userData.name;
+      email = userData.email;
       return User.create(
         [
           {
@@ -189,7 +191,7 @@ router.post("/verify", async (req, res) => {
       const id = profile.userId;
       userId = id;
       profileId = profile._id.toString();
-      return User.findByIdAndUpdate(id, { profileId: id }).session(session);
+      return User.findByIdAndUpdate(id, { profileId }).session(session);
     })
     .then(() => {
       return session.commitTransaction();
@@ -207,6 +209,7 @@ router.post("/verify", async (req, res) => {
         userId,
         profileId,
         type,
+        email,
       });
     })
     .catch((err) => {

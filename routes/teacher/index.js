@@ -12,88 +12,101 @@ const { USER_ID } = HEADERS;
 const router = express.Router();
 
 router.get("/", (_req, res) => {
-    return res.send({
-        "health": "OK"
-    })
+  return res.send({
+    health: "OK",
+  });
 });
 
 const validateTeacher = async (req, res, next) => {
-    // const id = req.headers[USER_ID]
+  // const id = req.headers[USER_ID]
 
-    // const user = await User.findById(id).select({
-    //     "type": 1
-    // })
+  // const user = await User.findById(id).select({
+  //     "type": 1
+  // })
 
-    // if (!user || user.type !== USER_TYPES.TEACHER) {
-    //     return res.status(400).send({
-    //         success: false,
-    //         message: "Not a valid teacher profile",
-    //     });
-    // }
+  // if (!user || user.type !== USER_TYPES.TEACHER) {
+  //     return res.status(400).send({
+  //         success: false,
+  //         message: "Not a valid teacher profile",
+  //     });
+  // }
 
-    next()
-}
+  next();
+};
 
-router.use("/class", validateTeacher, classAction)
+router.use("/class", validateTeacher, classAction);
 router.use("/profile", profile);
 
 router.get("/getAllClasses", validateTeacher, async (req, res) => {
-    const id = req.query.id;
+  const id = req.query.profileId;
 
-    const teacher = await Teacher.findById(id).select({
-        "classes": 1
+  const teacher = await Teacher.findById(id).select({
+    classes: 1,
+  });
+
+  if (!teacher)
+    return res.status(401).send({
+      success: false,
+      message: "Could not find the teacher",
     });
 
-    if (!teacher) return res.status(401).send({
-        success: false,
-        message: "Could not find the teacher",
-    })
+  const idList = teacher.classes;
 
-    const idList = teacher.classes
+  const classes = await ClassModel.find({
+    _id: {
+      $in: idList,
+    },
+  });
 
-    const classes = await ClassModel.find({
-        '_id': {
-            $in: idList
-        }
-    })
-
-    return res.send({
-        classes
-    })
-})
+  return res.send({
+    classes,
+  });
+});
 
 router.post("/createClass", async (req, res) => {
-    const { teacher_id, title } = req.body
+  const { profileId, title } = req.body;
 
-    let session = null, classObj;
+  let session = null,
+    classObj;
 
-    db.startSession().then((_session) => {
-        session = _session;
+  db.startSession()
+    .then((_session) => {
+      session = _session;
 
-        session.startTransaction();
-        return ClassModel.create([{
+      session.startTransaction();
+      return ClassModel.create(
+        [
+          {
             title,
-            teacher: teacher_id
-        }], { session });
-    }).then(([arg]) => {
-        classObj = arg
-
-        return Teacher.findByIdAndUpdate(teacher_id, {
-            $push: { classes: classObj._id }
-        })
-    }).then(() => {
-        return session.commitTransaction()
-    }).then(() => {
-        return res.send({ class: classObj });
-    }).catch((err) => {
-        res.status(400).send({
-            success: false,
-            message: `Something went error: ${err}`,
-        });
-        return session.abortTransaction()
-    }).finally(() => {
-        return session.endSession()
+            teacher: profileId,
+          },
+        ],
+        { session }
+      );
     })
-})
+    .then(([arg]) => {
+      classObj = arg;
+
+      return Teacher.findByIdAndUpdate(profileId, {
+        $push: { classes: classObj._id },
+      });
+    })
+    .then(() => {
+      return session.commitTransaction();
+    })
+    .then(() => {
+      return res.send({ class: classObj });
+    })
+    .catch((err) => {
+      res.status(400).send({
+        success: false,
+        message: `Something went error: ${err}`,
+      });
+      return session.abortTransaction();
+    })
+    .finally(() => {
+      return session.endSession();
+    });
+});
 
 export default router;
