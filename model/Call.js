@@ -25,6 +25,10 @@ const Schema = new mongoose.Schema({
   googleMeet: {
     type: String,
   },
+  participants: {
+    type: [ObjectId],
+    required: true
+  }
 });
 
 export default mongoose.model("Call", Schema);

@@ -3,6 +3,7 @@ import { getHashString } from "../../util/index.js";
 import axios from "axios";
 import Call from "../../model/Call.js";
 import Notif from "../../service/notification/index.js";
+import Cache from "../../service/cache/index.js";
 
 const router = express.Router();
 
@@ -62,7 +63,7 @@ const getGoogleMeetLink = (req, res, next) => {
 };
 
 router.post("/addCall", getGoogleMeetLink, async (req, res) => {
-  const { title, classId, description, startTime, endTime } = req.body;
+  const { title, classId, description, startTime, endTime, participants } = req.body;
 
   const googleMeet = res.locals.googleMeetLink;
 
@@ -74,6 +75,11 @@ router.post("/addCall", getGoogleMeetLink, async (req, res) => {
       startTime,
       endTime,
       googleMeet,
+      participants
+    });
+
+    participants.forEach(id => {
+      Cache.Events.addResetFlag(id);
     });
 
     await Notif.Events.handleEvent(call);

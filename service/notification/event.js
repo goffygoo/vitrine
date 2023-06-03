@@ -28,7 +28,7 @@ const handleEvent = async (call) => {
   const currentTime = Date.now();
   const timeDiffInMin = (startTime - currentTime) / (1000 * 60);
 
-  // check on API (startTime > currentTime)
+  // TODO: check on API (startTime > currentTime)
 
   if (timeDiffInMin <= 10) {
     notifyImmediately(startTime);
