@@ -6,7 +6,7 @@ const createEvent = async (call) => {
   await Event.create({
     startTime: new Date(call.startTime).getTime(),
     type: EVENT_TYPES.CALL,
-    parentId: call.classId,
+    parentId: call._id,
   });
 };
 

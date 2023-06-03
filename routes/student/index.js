@@ -64,7 +64,7 @@ router.get("/getAllClasses", validateStudent, async (req, res) => {
 });
 
 router.post("/joinClass", validateStudent, async (req, res) => {
-  const { profileId, class_id } = req.body;
+  const { userId, classId } = req.body;
 
   let session = null;
 
@@ -73,13 +73,18 @@ router.post("/joinClass", validateStudent, async (req, res) => {
       session = _session;
 
       session.startTransaction();
-      return Student.findByIdAndUpdate(profileId, {
-        $push: { classes: class_id },
-      });
+      return Student.findOneAndUpdate(
+        {
+          userId,
+        },
+        {
+          $push: { classes: classId },
+        }
+      );
     })
     .then(() => {
-      return ClassModel.findByIdAndUpdate(class_id, {
-        $push: { students: profileId },
+      return ClassModel.findByIdAndUpdate(classId, {
+        $push: { students: userId },
       });
     })
     .then(() => {

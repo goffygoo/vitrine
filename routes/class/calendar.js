@@ -16,7 +16,7 @@ router.get("/", (_req, res) => {
 });
 
 const getGoogleMeetLink = (req, res, next) => {
-  const { googleAccessToken, startTime, endTime, participants } = req.body;
+  const { googleAccessToken, startTime, endTime, meetAttendees } = req.body;
 
   axios
     .post(
@@ -30,7 +30,7 @@ const getGoogleMeetLink = (req, res, next) => {
           dateTime: endTime,
           timeZone: "Asia/Kolkata",
         },
-        attendees: participants,
+        attendees: meetAttendees,
         conferenceData: {
           createRequest: {
             conferenceSolutionKey: {
@@ -63,7 +63,8 @@ const getGoogleMeetLink = (req, res, next) => {
 };
 
 router.post("/addCall", getGoogleMeetLink, async (req, res) => {
-  const { title, classId, description, startTime, endTime, participants } = req.body;
+  const { title, classId, description, startTime, endTime, participants } =
+    req.body;
 
   const googleMeet = res.locals.googleMeetLink;
 
@@ -75,10 +76,10 @@ router.post("/addCall", getGoogleMeetLink, async (req, res) => {
       startTime,
       endTime,
       googleMeet,
-      participants
+      participants,
     });
 
-    participants.forEach(id => {
+    participants.forEach((id) => {
       Cache.Events.addResetFlag(id);
     });
 
