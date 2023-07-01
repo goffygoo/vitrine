@@ -1,5 +1,7 @@
 import { Server } from "socket.io";
 
+const SOCKET_TOKEN = "SOCKET_TOKEN";
+
 let io;
 
 export const initConnection = (server) => {
@@ -8,6 +10,16 @@ export const initConnection = (server) => {
       origin: "*",
       methods: ["GET", "POST"],
     },
+  });
+
+  io.use((socket, next) => {
+    next();
+    // const token = socket.handshake.auth.token;
+    // if (token === SOCKET_TOKEN) {
+    //   next();
+    // } else {
+    //   next(new Error("Invalid Connection"))
+    // }
   });
 
   io.on("connection", (socket) => {
