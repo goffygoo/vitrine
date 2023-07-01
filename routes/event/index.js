@@ -18,7 +18,7 @@ const getAllEventsForId = async (userId) => {
   });
 
   const allEvents = [...calls].sort((a, b) => {
-    return a.startTime > b.startTime ? -1 : 1;
+    return a.startTime < b.startTime ? -1 : 1;
   });
 
   return allEvents;
