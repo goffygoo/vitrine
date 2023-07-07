@@ -9,14 +9,19 @@ const Schema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  verified: {
+    type: Boolean,
+    default: false,
+  },
+  googleAuth: {
+    type: Boolean,
+  },
   password: {
     type: String,
-    required: true,
   },
   type: {
     type: String,
     enum: [USER_TYPES.TEACHER, USER_TYPES.STUDENT, USER_TYPES.ADMIN],
-    required: true,
   },
   profileId: {
     type: ObjectId,
