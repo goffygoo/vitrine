@@ -36,7 +36,7 @@ export const initConnection = (server) => {
       classes: 1,
     });
 
-    data.classes.forEach((classId) => {
+    data?.classes?.forEach((classId) => {
       const roomId = SOCKET_ROOM_TAG.CLASS + classId.toString();
       socket.join(roomId);
     });

@@ -8,8 +8,12 @@ import jwt from "jsonwebtoken";
 import TempLink from "../../model/TempLink.js";
 import Teacher from "../../model/Teacher.js";
 import Student from "../../model/Student.js";
+import config from "../../constants/config.js";
 import { USER_TYPES } from "../../constants/index.js";
 import { processPassword } from "../../util/index.js";
+import axios from "axios";
+
+const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_TOKEN_URL } = config;
 
 const SECRET = "SECRET";
 
@@ -87,6 +91,18 @@ router.post("/login", async (req, res) => {
     });
   }
 
+  if (!user.verified) {
+    const token = jwt.sign({
+      userId: user._id
+    }, SECRET, {
+      expiresIn: ACCESS_TOKEN_EXPIRE_TIME
+    })
+
+    return res.send({
+      verifyProfileToken: token
+    });
+  }
+
   if (processPassword(password) != user.password) {
     return res.status(401).send({
       success: false,
@@ -109,6 +125,7 @@ router.post("/login", async (req, res) => {
     id: user._id.toString(),
     profileId: user.profileId.toString(),
     type: user.type,
+    verified: user.verified,
   };
 
   const accessToken = jwt.sign(payload, SECRET, {
@@ -122,16 +139,20 @@ router.post("/login", async (req, res) => {
     userId: payload.id,
     profileId: payload.profileId,
     email: user.email,
+    verified: user.verified,
   });
 });
 
 router.post("/verify", async (req, res) => {
+  const { token } = req.body;
   let session = null,
     name = "",
     email,
+    password,
     userId,
     profileId,
-    type;
+    type,
+    verified;
   const refreshToken = generateToken();
 
   db.startSession()
@@ -139,7 +160,7 @@ router.post("/verify", async (req, res) => {
       session = _session;
 
       session.startTransaction();
-      return TempToken.findOneAndDelete({ token: req.body.token }).session(
+      return TempToken.findOneAndDelete({ token }).session(
         session
       );
     })
@@ -148,21 +169,45 @@ router.post("/verify", async (req, res) => {
 
       name = userData.name;
       email = userData.email;
-      return User.create(
-        [
-          {
-            email: userData.email,
-            password: userData.password,
-            type: userData.type,
-            refreshToken,
-            tokenEAT: Date.now() + REFRESH_TOKEN_EXPIRE_TIME,
-          },
-        ],
-        { session }
-      );
-    })
-    .then(([userData]) => {
+      password = userData.password;
       type = userData.type;
+      verified = true;
+
+      return User.findOne({ email }).session(session);
+    })
+    .then((userData) => {
+      if (!userData) {
+        return User.create(
+          [
+            {
+              email,
+              password,
+              type,
+              refreshToken,
+              tokenEAT: Date.now() + REFRESH_TOKEN_EXPIRE_TIME,
+              verified
+            },
+          ],
+          { session }
+        );
+      }
+
+      if (!userData.verified) {
+        return User.findByIdAndUpdate(userData._id, {
+          password,
+          type,
+          refreshToken,
+          tokenEAT: Date.now() + REFRESH_TOKEN_EXPIRE_TIME,
+          verified,
+        }).session(session);
+      }
+
+      throw Error("Account already exists");
+    })
+    .then((response) => {
+      let userData = response;
+      if (Array.isArray(response)) [userData] = response;
+
       if (type === USER_TYPES.TEACHER) {
         return Teacher.create(
           [
@@ -197,7 +242,7 @@ router.post("/verify", async (req, res) => {
       return session.commitTransaction();
     })
     .then(() => {
-      const payload = { userId, profileId, type };
+      const payload = { userId, profileId, type, verified };
 
       const accessToken = jwt.sign(payload, SECRET, {
         expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
@@ -317,5 +362,224 @@ router.post("/resetPassword", async (req, res) => {
       return session.endSession();
     });
 });
+
+router.post("/googleLogin", async (req, res) => {
+  const { code } = req.body;
+
+  try {
+    const response = await axios
+      .post(
+        GOOGLE_TOKEN_URL,
+        {
+          code,
+          client_id: GOOGLE_CLIENT_ID,
+          client_secret: GOOGLE_CLIENT_SECRET,
+          redirect_uri: "http://localhost:3000/auth",
+          grant_type: "authorization_code",
+        }
+      )
+
+    const { data } = response;
+
+    const {
+      access_token,
+      expires_in,
+      refresh_token,
+      scope,
+      id_token,
+      token_type
+    } = data;
+
+    const userData = jwt.decode(id_token);
+    const { email } = userData;
+    // {
+    //   iss: 'https://accounts.google.com',
+    //   azp: '611755391410-8cin2sd35dg0o3p04d46a7qn9fpfsjcp.apps.googleusercontent.com',
+    //   aud: '611755391410-8cin2sd35dg0o3p04d46a7qn9fpfsjcp.apps.googleusercontent.com',
+    //   sub: '101254660173627597783',
+    //   email: 'jrvineetoli52.2@gmail.com',
+    //   email_verified: true,
+    //   at_hash: 'fBZHyhvzYI3Mo_t1vKvq3Q',
+    //   name: 'Master 01',
+    //   picture: 'https://lh3.googleusercontent.com/a/AAcHTtfs9mROiwWWQ-3vJhrRKbrleFT0spkagfJqfTcCq9rM=s96-c',
+    //   given_name: 'Master',
+    //   family_name: '01',
+    //   locale: 'en-GB',
+    //   iat: 1688683022,
+    //   exp: 1688686622
+    // }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        email,
+        googleAuth: true,
+      })
+    }
+
+    if (!user.verified) {
+      const token = jwt.sign({
+        userId: user._id
+      }, SECRET, {
+        expiresIn: ACCESS_TOKEN_EXPIRE_TIME
+      })
+
+      return res.send({
+        googleAuthResponse: {
+          access_token,
+          refresh_token
+        },
+        verifyProfileToken: token
+      });
+    }
+
+    let refreshToken = user.refreshToken, updateObject = {}, updateRequired = false;
+    if (!user.refreshToken || user.tokenEAT <= Date.now()) {
+      refreshToken = generateToken();
+      updateObject = {
+        ...updateObject,
+        refreshToken,
+        tokenEAT: Date.now() + REFRESH_TOKEN_EXPIRE_TIME,
+      };
+      updateRequired = true;
+    }
+    if (!user.googleAuth) {
+      updateObject = {
+        ...updateObject,
+        googleAuth: true,
+      };
+      updateRequired = true;
+    }
+    if (updateRequired) {
+      await User.findByIdAndUpdate(user._id, updateObject);
+    }
+
+    const payload = {
+      id: user._id.toString(),
+      profileId: user.profileId.toString(),
+      type: user.type,
+    };
+    const accessToken = jwt.sign(payload, SECRET, {
+      expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
+    });
+
+    return res.status(200).send({
+      accessToken,
+      refreshToken,
+      type: user.type,
+      userId: payload.id,
+      profileId: payload.profileId,
+      email: user.email,
+      googleAuth: {
+        access_token,
+        refresh_token
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).send(err);
+  }
+})
+
+const verifyProfileMiddleware = (req, res, next) => {
+  const token = req.body.verifyProfileToken;
+
+  jwt.verify(token, SECRET, (err, data) => {
+    if (err) {
+      return res.status(404).send("Invalid Request")
+    } else {
+      res.locals.data = data;
+      next();
+    }
+  })
+}
+
+router.post("/verifyProfile", verifyProfileMiddleware, async (req, res) => {
+  const { type } = req.body;
+  const { userId } = res.locals.data;
+
+  let session = null, profileId, verified, email, name = "New User";
+  const refreshToken = generateToken();
+
+  db.startSession()
+    .then((_session) => {
+      session = _session;
+      session.startTransaction();
+
+      return User.findById(userId).session(session);
+    })
+    .then((userData) => {
+      if (!userData) throw Error("Invalid Request");
+      if (userData.verified) throw Error("Account already exists");
+
+      email = userId.email;
+
+      if (type === USER_TYPES.TEACHER) {
+        return Teacher.create(
+          [
+            {
+              userId,
+              name,
+            },
+          ],
+          { session }
+        );
+      } else if (type === USER_TYPES.STUDENT) {
+        return Student.create(
+          [
+            {
+              userId,
+              name,
+            },
+          ],
+          { session }
+        );
+      } else {
+        throw Error("Invalid Request");
+      }
+    })
+    .then(([profile]) => {
+      verified = true;
+      profileId = profile._id.toString();
+      return User.findByIdAndUpdate(userId, {
+        profileId,
+        verified,
+        refreshToken,
+        tokenEAT: Date.now() + REFRESH_TOKEN_EXPIRE_TIME,
+      }).session(session);
+    })
+    .then(() => {
+      return session.commitTransaction();
+    })
+    .then(() => {
+      const payload = { userId, profileId, type, verified };
+
+      const accessToken = jwt.sign(payload, SECRET, {
+        expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
+      });
+
+      return res.status(201).send({
+        accessToken,
+        refreshToken,
+        userId,
+        profileId,
+        type,
+        email,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).send({
+        success: false,
+        message: `Something went wrong`,
+        err,
+      });
+      return session.abortTransaction();
+    })
+    .finally(() => {
+      return session.endSession();
+    });
+})
 
 export default router;
