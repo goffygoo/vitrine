@@ -11,6 +11,14 @@ const Schema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  senderProfilePicture: {
+    type: String,
+    default: "/tempuser.jpg",
+  },
+  senderName: {
+    type: String,
+    required: true,
+  },
   expireAt: {
     type: Date,
     expires: "30d",

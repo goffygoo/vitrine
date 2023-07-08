@@ -9,13 +9,16 @@ import TempLink from "../../model/TempLink.js";
 import Teacher from "../../model/Teacher.js";
 import Student from "../../model/Student.js";
 import config from "../../constants/config.js";
-import { USER_TYPES } from "../../constants/index.js";
+import { USER_PICTURE_DEFAULT, USER_TYPES } from "../../constants/index.js";
 import { processPassword } from "../../util/index.js";
 import axios from "axios";
 
-const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_TOKEN_URL } = config;
-
-const SECRET = "SECRET";
+const {
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  GOOGLE_TOKEN_URL,
+  JWT_SECRET_KEY,
+} = config;
 
 const REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 28;
 const ACCESS_TOKEN_EXPIRE_TIME = "30m";
@@ -92,14 +95,18 @@ router.post("/login", async (req, res) => {
   }
 
   if (!user.verified) {
-    const token = jwt.sign({
-      userId: user._id
-    }, SECRET, {
-      expiresIn: ACCESS_TOKEN_EXPIRE_TIME
-    })
+    const token = jwt.sign(
+      {
+        userId: user._id,
+      },
+      JWT_SECRET_KEY,
+      {
+        expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
+      }
+    );
 
     return res.send({
-      verifyProfileToken: token
+      verifyProfileToken: token,
     });
   }
 
@@ -128,11 +135,27 @@ router.post("/login", async (req, res) => {
     verified: user.verified,
   };
 
-  const accessToken = jwt.sign(payload, SECRET, {
+  const accessToken = jwt.sign(payload, JWT_SECRET_KEY, {
     expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
   });
 
+  const Model = user.type === USER_TYPES.TEACHER ? Teacher : Student;
+  const profile = await Model.findById(user.profileId);
+  const { name, profilePicture } = profile;
+  const dataPayload = {
+    userId: user._id,
+    profileId: user.profileId,
+    name,
+    type: user.type,
+    profilePicture,
+    classes: profile.classes,
+  };
+  const dataToken = jwt.sign(dataPayload, JWT_SECRET_KEY, {
+    expiresIn: REFRESH_TOKEN_EXPIRE_TIME,
+  });
+
   return res.status(201).send({
+    dataToken,
     accessToken,
     refreshToken,
     type: user.type,
@@ -160,9 +183,7 @@ router.post("/verify", async (req, res) => {
       session = _session;
 
       session.startTransaction();
-      return TempToken.findOneAndDelete({ token }).session(
-        session
-      );
+      return TempToken.findOneAndDelete({ token }).session(session);
     })
     .then((userData) => {
       if (!userData) throw Error("Invalid token");
@@ -185,7 +206,7 @@ router.post("/verify", async (req, res) => {
               type,
               refreshToken,
               tokenEAT: Date.now() + REFRESH_TOKEN_EXPIRE_TIME,
-              verified
+              verified,
             },
           ],
           { session }
@@ -244,11 +265,22 @@ router.post("/verify", async (req, res) => {
     .then(() => {
       const payload = { userId, profileId, type, verified };
 
-      const accessToken = jwt.sign(payload, SECRET, {
+      const accessToken = jwt.sign(payload, JWT_SECRET_KEY, {
         expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
       });
 
+      const dataPayload = {
+        userId,
+        profileId,
+        name,
+        type,
+        profilePicture: USER_PICTURE_DEFAULT,
+      };
+      const dataToken = jwt.sign(dataPayload, JWT_SECRET_KEY, {
+        expiresIn: REFRESH_TOKEN_EXPIRE_TIME,
+      });
       return res.status(201).send({
+        dataToken,
         accessToken,
         refreshToken,
         userId,
@@ -367,17 +399,13 @@ router.post("/googleLogin", async (req, res) => {
   const { code } = req.body;
 
   try {
-    const response = await axios
-      .post(
-        GOOGLE_TOKEN_URL,
-        {
-          code,
-          client_id: GOOGLE_CLIENT_ID,
-          client_secret: GOOGLE_CLIENT_SECRET,
-          redirect_uri: "http://localhost:3000/auth",
-          grant_type: "authorization_code",
-        }
-      )
+    const response = await axios.post(GOOGLE_TOKEN_URL, {
+      code,
+      client_id: GOOGLE_CLIENT_ID,
+      client_secret: GOOGLE_CLIENT_SECRET,
+      redirect_uri: "http://localhost:3000/auth",
+      grant_type: "authorization_code",
+    });
 
     const { data } = response;
 
@@ -387,11 +415,11 @@ router.post("/googleLogin", async (req, res) => {
       refresh_token,
       scope,
       id_token,
-      token_type
+      token_type,
     } = data;
 
     const userData = jwt.decode(id_token);
-    const { email } = userData;
+    const { email, name, picture } = userData;
     // {
     //   iss: 'https://accounts.google.com',
     //   azp: '611755391410-8cin2sd35dg0o3p04d46a7qn9fpfsjcp.apps.googleusercontent.com',
@@ -415,26 +443,34 @@ router.post("/googleLogin", async (req, res) => {
       user = await User.create({
         email,
         googleAuth: true,
-      })
+      });
     }
 
     if (!user.verified) {
-      const token = jwt.sign({
-        userId: user._id
-      }, SECRET, {
-        expiresIn: ACCESS_TOKEN_EXPIRE_TIME
-      })
+      const token = jwt.sign(
+        {
+          name,
+          profilePicture: picture,
+          userId: user._id,
+        },
+        JWT_SECRET_KEY,
+        {
+          expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
+        }
+      );
 
       return res.send({
         googleAuthResponse: {
           access_token,
-          refresh_token
+          refresh_token,
         },
-        verifyProfileToken: token
+        verifyProfileToken: token,
       });
     }
 
-    let refreshToken = user.refreshToken, updateObject = {}, updateRequired = false;
+    let refreshToken = user.refreshToken,
+      updateObject = {},
+      updateRequired = false;
     if (!user.refreshToken || user.tokenEAT <= Date.now()) {
       refreshToken = generateToken();
       updateObject = {
@@ -460,11 +496,28 @@ router.post("/googleLogin", async (req, res) => {
       profileId: user.profileId.toString(),
       type: user.type,
     };
-    const accessToken = jwt.sign(payload, SECRET, {
+    const accessToken = jwt.sign(payload, JWT_SECRET_KEY, {
       expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
     });
 
+    const Model = user.type === USER_TYPES.TEACHER ? Teacher : Student;
+    const profile = await Model.findById(user.profileId);
+    const { name: profileName, profilePicture, classes } = profile;
+
+    const dataPayload = {
+      userId: user._id,
+      profileId: user.profileId,
+      name: profileName,
+      type: user.type,
+      profilePicture,
+      classes,
+    };
+    const dataToken = jwt.sign(dataPayload, JWT_SECRET_KEY, {
+      expiresIn: REFRESH_TOKEN_EXPIRE_TIME,
+    });
+
     return res.status(200).send({
+      dataToken,
       accessToken,
       refreshToken,
       type: user.type,
@@ -473,33 +526,40 @@ router.post("/googleLogin", async (req, res) => {
       email: user.email,
       googleAuth: {
         access_token,
-        refresh_token
+        refresh_token,
       },
     });
   } catch (err) {
     console.log(err);
     res.status(400).send(err);
   }
-})
+});
 
 const verifyProfileMiddleware = (req, res, next) => {
   const token = req.body.verifyProfileToken;
 
-  jwt.verify(token, SECRET, (err, data) => {
+  jwt.verify(token, JWT_SECRET_KEY, (err, data) => {
     if (err) {
-      return res.status(404).send("Invalid Request")
+      return res.status(404).send("Invalid Request");
     } else {
       res.locals.data = data;
       next();
     }
-  })
-}
+  });
+};
 
 router.post("/verifyProfile", verifyProfileMiddleware, async (req, res) => {
   const { type } = req.body;
-  const { userId } = res.locals.data;
+  const {
+    userId,
+    name = "New User",
+    profilePicture = USER_PICTURE_DEFAULT,
+  } = res.locals.data;
 
-  let session = null, profileId, verified, email, name = "New User";
+  let session = null,
+    profileId,
+    verified,
+    email;
   const refreshToken = generateToken();
 
   db.startSession()
@@ -521,6 +581,7 @@ router.post("/verifyProfile", verifyProfileMiddleware, async (req, res) => {
             {
               userId,
               name,
+              profilePicture,
             },
           ],
           { session }
@@ -531,6 +592,7 @@ router.post("/verifyProfile", verifyProfileMiddleware, async (req, res) => {
             {
               userId,
               name,
+              profilePicture,
             },
           ],
           { session }
@@ -543,6 +605,7 @@ router.post("/verifyProfile", verifyProfileMiddleware, async (req, res) => {
       verified = true;
       profileId = profile._id.toString();
       return User.findByIdAndUpdate(userId, {
+        type,
         profileId,
         verified,
         refreshToken,
@@ -555,11 +618,22 @@ router.post("/verifyProfile", verifyProfileMiddleware, async (req, res) => {
     .then(() => {
       const payload = { userId, profileId, type, verified };
 
-      const accessToken = jwt.sign(payload, SECRET, {
+      const accessToken = jwt.sign(payload, JWT_SECRET_KEY, {
         expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
+      });
+      const dataPayload = {
+        userId,
+        profileId,
+        name,
+        type,
+        profilePicture,
+      };
+      const dataToken = jwt.sign(dataPayload, JWT_SECRET_KEY, {
+        expiresIn: REFRESH_TOKEN_EXPIRE_TIME,
       });
 
       return res.status(201).send({
+        dataToken,
         accessToken,
         refreshToken,
         userId,
@@ -580,6 +654,6 @@ router.post("/verifyProfile", verifyProfileMiddleware, async (req, res) => {
     .finally(() => {
       return session.endSession();
     });
-})
+});
 
 export default router;

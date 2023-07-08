@@ -22,3 +22,5 @@ export const SOCKET_EVENTS = {
   MESSAGE_RECEIVED: "chat-message-received",
   JOIN_CHAT: "join-chat",
 };
+
+export const USER_PICTURE_DEFAULT = "/tempuser.jpg";
