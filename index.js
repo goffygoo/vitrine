@@ -19,10 +19,6 @@ initConnection(server);
 initScheduler();
 
 app.use("/api", router);
-app.get("/test", (req, res) => {
-  emit("reply", "REST");
-  return res.send("OK");
-});
 
 server.listen(PORT, () => {
   console.log(`Server starting in port: ${PORT}`);

@@ -1,10 +1,27 @@
 import express from "express";
+import Message from "../../model/Message.js";
 const router = express.Router();
 
 router.get("/", (_req, res) => {
+  return res.send({
+    health: "OK",
+  });
+});
+
+router.get("/getMessages", async (req, res) => {
+  const { classId } = req.query;
+  try {
+    const messages = await Message.find({ classId });
     return res.send({
-        "health": "OK"
-    })
+      data: messages,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send({
+      success: false,
+      err,
+    });
+  }
 });
 
 export default router;
