@@ -14,11 +14,10 @@ router.post("/addForm", async (req, res) => {
   const { classId, title } = req.body;
   try {
     // TODO: Sanity check
-    const editor = await Editor.create({ content: {} });
     await Form.create({
       classId,
       title,
-      titleEditor: editor._id,
+      titleEditorContent: {},
     });
     res.status(200).send({
       success: true,
@@ -53,17 +52,7 @@ router.get("/getForms", async (req, res) => {
 router.get("/getFormById", async (req, res) => {
   const { formId } = req.query;
   try {
-    const form = await Form.findById(formId);
-    const formData = {};
-    formData.titleEditorContent = (
-      await Editor.findById(form.titleEditor)
-    )?.content;
-    formData.title = form.title;
-    formData.titleEditor = form.titleEditor;
-
-    formData.entities = await Promise.all(
-      form.entities.map((entityId) => Editor.findById(entityId))
-    );
+    const formData = await Form.findById(formId);
 
     return res.send({
       formData,
@@ -82,29 +71,11 @@ router.post("/updateForm", async (req, res) => {
 
   try {
     // TODO: Sanity check
-    const title = formContent.title;
-    await Editor.findByIdAndUpdate(formContent.titleEditor, {
-      content: formContent.titleEditorContent,
-    });
-
     console.log(formContent);
-    console.log(formContent.titleEditor);
-    const pp = await Editor.findById(formContent.titleEditor);
-    console.log(pp);
-
-    // const entitiesArray = await Promise.all(
-    //   formContent.formEntities.map((element) =>
-    //     Editor.create({ content: element.questionDescription })
-    //   )
-    // );
-    // const entities = formContent.formEntities.forEach((element, index) => {
-    //   return {
-    //     ...element,
-    //     questionDescription: entitiesArray[index]._id,
-    //   };
-    // });
     await Form.findByIdAndUpdate(formId, {
-      title,
+      title: formContent.title,
+      titleEditorContent: formContent.titleEditorContent,
+      entities: formContent.entities,
     });
 
     res.status(200).send({

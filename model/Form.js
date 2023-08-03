@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import FormEntity from "./Schema/FormEntity.js";
 
 const { ObjectId } = mongoose.Schema.Types;
 
@@ -12,11 +11,11 @@ const Schema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  titleEditor: {
-    type: ObjectId,
+  titleEditorContent: {
+    type: Object,
   },
   entities: {
-    type: [FormEntity],
+    type: [Object],
     default: [],
   },
 });
