@@ -18,6 +18,7 @@ router.post("/addForm", async (req, res) => {
       classId,
       title,
       titleEditorContent: {},
+      entities: {}
     });
     res.status(200).send({
       success: true,

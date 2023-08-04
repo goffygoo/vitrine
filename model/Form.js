@@ -15,8 +15,7 @@ const Schema = new mongoose.Schema({
     type: Object,
   },
   entities: {
-    type: [Object],
-    default: [],
+    type: Object,
   },
 });
 
