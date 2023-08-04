@@ -1,5 +1,5 @@
 import express from "express";
-import Student from "../../model/Student.js";
+import Provider from "../../model/Provider.js";
 
 const router = express.Router();
 
@@ -13,10 +13,10 @@ router.get("/view", async (req, res) => {
   try {
     const id = req.query.profileId;
 
-    const student = await Student.findById(id);
-    if (!student) throw new Error("Invalid id");
+    const provider = await Provider.findById(id);
+    if (!provider) throw new Error("Invalid id");
 
-    return res.send(student);
+    return res.send(provider);
   } catch (err) {
     return res.status(400).send({
       success: false,
@@ -29,7 +29,7 @@ router.post("/update", async (req, res) => {
   const { id, name, address } = req.body;
 
   try {
-    await Student.findByIdAndUpdate(id, {
+    await Provider.findByIdAndUpdate(id, {
       ...(name && { name }),
       ...(address && { address }),
     });

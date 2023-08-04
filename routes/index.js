@@ -1,8 +1,8 @@
 import express from "express";
 import auth from "./auth/index.js";
-import teacher from "./teacher/index.js";
-import student from "./student/index.js";
-import classRoute from "./class/index.js";
+import provider from "./provider/index.js";
+import consumer from "./consumer/index.js";
+import spaceRoute from "./space/index.js";
 import event from "./event/index.js";
 
 const router = express.Router();
@@ -14,9 +14,9 @@ router.get("/", (_req, res) => {
 });
 
 router.use("/auth", auth);
-router.use("/teacher", teacher);
-router.use("/student", student);
-router.use("/class", classRoute);
+router.use("/provider", provider);
+router.use("/consumer", consumer);
+router.use("/space", spaceRoute);
 router.use("/event", event);
 
 export default router;

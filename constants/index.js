@@ -3,8 +3,8 @@ export const HEADERS = {
 };
 
 export const USER_TYPES = {
-  TEACHER: "TEACHER",
-  STUDENT: "STUDENT",
+  PROVIDER: "PROVIDER",
+  CONSUMER: "CONSUMER",
   ADMIN: "ADMIN",
 };
 
@@ -14,7 +14,7 @@ export const EVENT_TYPES = {
 };
 
 export const SOCKET_ROOM_TAG = {
-  CLASS: "class",
+  SPACE: "space",
 };
 
 export const SOCKET_EVENTS = {

@@ -7,7 +7,7 @@ const Schema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  classId: {
+  spaceId: {
     type: ObjectId,
     required: true,
   },
@@ -27,8 +27,8 @@ const Schema = new mongoose.Schema({
   },
   participants: {
     type: [ObjectId],
-    required: true
-  }
+    required: true,
+  },
 });
 
 export default mongoose.model("Call", Schema);

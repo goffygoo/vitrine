@@ -21,7 +21,7 @@ const Schema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: [USER_TYPES.TEACHER, USER_TYPES.STUDENT, USER_TYPES.ADMIN],
+    enum: [USER_TYPES.PROVIDER, USER_TYPES.CONSUMER, USER_TYPES.ADMIN],
   },
   profileId: {
     type: ObjectId,

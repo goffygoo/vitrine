@@ -16,7 +16,7 @@ const Schema = new mongoose.Schema({
   address: {
     type: Address,
   },
-  classes: {
+  spaces: {
     type: [ObjectId],
     default: [],
   },
@@ -26,4 +26,4 @@ const Schema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model("Student", Schema);
+export default mongoose.model("Consumer", Schema);

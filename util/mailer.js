@@ -14,7 +14,7 @@ const text = ""
 const getVerifyHtml = (token) => {
     return (`
         <h2>Kindly click on the link to verify your email address<h2><br>
-        <a href="http://localhost:3000/verify/${token}"><h1>Verify</h1></a><br>
+        <a href="http://localhost:3000/verifyEmail/${token}"><h1>Verify</h1></a><br>
         <p>${token}</p><br>
         <br>
         <h2>Please do NOT reply to this email</h2>

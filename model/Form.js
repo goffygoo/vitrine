@@ -3,21 +3,20 @@ import mongoose from "mongoose";
 const { ObjectId } = mongoose.Schema.Types;
 
 const Schema = new mongoose.Schema({
+  spaceId: {
+    type: ObjectId,
+    required: true,
+  },
   title: {
     type: String,
     required: true,
   },
-  type: {
-    type: String,
-    enum: ["RICH_DOC", "VIDEO", "PDF", "IMAGE"],
-    required: true,
+  titleEditorContent: {
+    type: Object,
   },
-  url: {
-    type: String,
-  },
-  document: {
-    type: Number,
+  entities: {
+    type: Object,
   },
 });
 
-export default mongoose.model("Space", Schema);
+export default mongoose.model("Form", Schema);
