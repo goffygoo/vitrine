@@ -11,14 +11,14 @@ router.get("/", (_req, res) => {
 });
 
 router.post("/addForm", async (req, res) => {
-  const { classId, title } = req.body;
+  const { spaceId, title } = req.body;
   try {
     // TODO: Sanity check
     await Form.create({
-      classId,
+      spaceId,
       title,
       titleEditorContent: {},
-      entities: {}
+      entities: {},
     });
     res.status(200).send({
       success: true,
@@ -34,9 +34,9 @@ router.post("/addForm", async (req, res) => {
 });
 
 router.get("/getForms", async (req, res) => {
-  const { classId } = req.query;
+  const { spaceId } = req.query;
   try {
-    const forms = await Form.find({ classId }).select({ _id: 1, title: 1 });
+    const forms = await Form.find({ spaceId }).select({ _id: 1, title: 1 });
 
     return res.send({
       forms,

@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
-import Student from "../model/Student.js";
-import Teacher from "../model/Teacher.js";
+import Consumer from "../model/Consumer.js";
+import Provider from "../model/Provider.js";
 import { USER_TYPES, SOCKET_ROOM_TAG } from "../constants/index.js";
 import chatService from "../service/chat/index.js";
 
@@ -30,14 +30,14 @@ export const initConnection = (server) => {
     // TODO: error handling
     const profileId = socket.handshake.auth.profileId;
     const type = socket.handshake.auth.type;
-    const Model = type === USER_TYPES.STUDENT ? Student : Teacher;
+    const Model = type === USER_TYPES.CONSUMER ? Consumer : Provider;
     const data = await Model.findById(profileId).select({
       _id: 0,
-      classes: 1,
+      spaces: 1,
     });
 
-    data?.classes?.forEach((classId) => {
-      const roomId = SOCKET_ROOM_TAG.CLASS + classId.toString();
+    data?.spaces?.forEach((spaceId) => {
+      const roomId = SOCKET_ROOM_TAG.SPACE + spaceId.toString();
       socket.join(roomId);
     });
 

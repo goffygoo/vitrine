@@ -63,7 +63,7 @@ const getGoogleMeetLink = (req, res, next) => {
 };
 
 router.post("/addCall", getGoogleMeetLink, async (req, res) => {
-  const { title, classId, description, startTime, endTime, participants } =
+  const { title, spaceId, description, startTime, endTime, participants } =
     req.body;
 
   const googleMeet = res.locals.googleMeetLink;
@@ -71,7 +71,7 @@ router.post("/addCall", getGoogleMeetLink, async (req, res) => {
   try {
     const call = await Call.create({
       title,
-      classId,
+      spaceId,
       description,
       startTime,
       endTime,

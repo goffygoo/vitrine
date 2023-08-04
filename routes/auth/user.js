@@ -6,8 +6,8 @@ import { sendResetPasswordMail, sendVerifyMail } from "../../util/mailer.js";
 import { randomUUID } from "crypto";
 import jwt from "jsonwebtoken";
 import TempLink from "../../model/TempLink.js";
-import Teacher from "../../model/Teacher.js";
-import Student from "../../model/Student.js";
+import Provider from "../../model/Provider.js";
+import Consumer from "../../model/Consumer.js";
 import config from "../../constants/config.js";
 import { USER_PICTURE_DEFAULT, USER_TYPES } from "../../constants/index.js";
 import { processPassword } from "../../util/index.js";
@@ -58,7 +58,7 @@ router.post("/signup", async (req, res) => {
       email,
     });
   }
-  if (!(type === USER_TYPES.TEACHER || type === USER_TYPES.STUDENT)) {
+  if (!(type === USER_TYPES.PROVIDER || type === USER_TYPES.CONSUMER)) {
     return res.status(400).send({
       success: false,
       message: "Invalid user type",
@@ -139,7 +139,7 @@ router.post("/login", async (req, res) => {
     expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
   });
 
-  const Model = user.type === USER_TYPES.TEACHER ? Teacher : Student;
+  const Model = user.type === USER_TYPES.PROVIDER ? Provider : Consumer;
   const profile = await Model.findById(user.profileId);
   const { name, profilePicture } = profile;
   const dataPayload = {
@@ -148,7 +148,7 @@ router.post("/login", async (req, res) => {
     name,
     type: user.type,
     profilePicture,
-    classes: profile.classes,
+    spaces: profile.spaces,
   };
   const dataToken = jwt.sign(dataPayload, JWT_SECRET_KEY, {
     expiresIn: REFRESH_TOKEN_EXPIRE_TIME,
@@ -229,8 +229,8 @@ router.post("/verify", async (req, res) => {
       let userData = response;
       if (Array.isArray(response)) [userData] = response;
 
-      if (type === USER_TYPES.TEACHER) {
-        return Teacher.create(
+      if (type === USER_TYPES.PROVIDER) {
+        return Provider.create(
           [
             {
               userId: userData._id,
@@ -239,8 +239,8 @@ router.post("/verify", async (req, res) => {
           ],
           { session }
         );
-      } else if (type === USER_TYPES.STUDENT) {
-        return Student.create(
+      } else if (type === USER_TYPES.CONSUMER) {
+        return Consumer.create(
           [
             {
               userId: userData._id,
@@ -500,9 +500,9 @@ router.post("/googleLogin", async (req, res) => {
       expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
     });
 
-    const Model = user.type === USER_TYPES.TEACHER ? Teacher : Student;
+    const Model = user.type === USER_TYPES.PROVIDER ? Provider : Consumer;
     const profile = await Model.findById(user.profileId);
-    const { name: profileName, profilePicture, classes } = profile;
+    const { name: profileName, profilePicture, spaces } = profile;
 
     const dataPayload = {
       userId: user._id,
@@ -510,7 +510,7 @@ router.post("/googleLogin", async (req, res) => {
       name: profileName,
       type: user.type,
       profilePicture,
-      classes,
+      spaces,
     };
     const dataToken = jwt.sign(dataPayload, JWT_SECRET_KEY, {
       expiresIn: REFRESH_TOKEN_EXPIRE_TIME,
@@ -575,8 +575,8 @@ router.post("/verifyProfile", verifyProfileMiddleware, async (req, res) => {
 
       email = userId.email;
 
-      if (type === USER_TYPES.TEACHER) {
-        return Teacher.create(
+      if (type === USER_TYPES.PROVIDER) {
+        return Provider.create(
           [
             {
               userId,
@@ -586,8 +586,8 @@ router.post("/verifyProfile", verifyProfileMiddleware, async (req, res) => {
           ],
           { session }
         );
-      } else if (type === USER_TYPES.STUDENT) {
-        return Student.create(
+      } else if (type === USER_TYPES.CONSUMER) {
+        return Consumer.create(
           [
             {
               userId,

@@ -1,10 +1,10 @@
 import express from "express";
-import classAction from "./classAction.js";
+import spaceAction from "./spaceAction.js";
 import profile from "./profile.js";
 import { HEADERS, USER_TYPES } from "./../../constants/index.js";
 import User from "../../model/User.js";
-import Student from "../../model/Student.js";
-import ClassModel from "../../model/ClassModel.js";
+import Provider from "../../model/Provider.js";
+import SpaceModel from "../../model/SpaceModel.js";
 import db from "../../util/db.js";
 
 const { USER_ID } = HEADERS;
@@ -17,81 +17,85 @@ router.get("/", (_req, res) => {
   });
 });
 
-const validateStudent = async (req, res, next) => {
+const validateProvider = async (req, res, next) => {
   // const id = req.headers[USER_ID]
 
   // const user = await User.findById(id).select({
   //     "type": 1
   // })
 
-  // if (!user || user.type !== USER_TYPES.STUDENT) {
+  // if (!user || user.type !== USER_TYPES.TEACHER) {
   //     return res.status(400).send({
   //         success: false,
-  //         message: "Not a valid student profile",
+  //         message: "Not a valid teacher profile",
   //     });
   // }
 
   next();
 };
 
-router.use("/class", validateStudent, classAction);
+router.use("/space", validateProvider, spaceAction);
 router.use("/profile", profile);
 
-router.get("/getAllClasses", validateStudent, async (req, res) => {
+router.get("/getAllSpaces", validateProvider, async (req, res) => {
   const id = req.query.profileId;
 
-  const student = await Student.findById(id).select({
-    classes: 1,
+  const provider = await Provider.findById(id).select({
+    spaces: 1,
   });
 
-  if (!student)
+  if (!provider)
     return res.status(401).send({
       success: false,
-      message: "Could not find the student",
+      message: "Could not find the provider",
     });
 
-  const idList = student.classes;
+  const idList = provider.spaces;
 
-  const classes = await ClassModel.find({
+  const spaces = await SpaceModel.find({
     _id: {
       $in: idList,
     },
   });
 
   return res.send({
-    classes,
+    spaces,
   });
 });
 
-router.post("/joinClass", validateStudent, async (req, res) => {
-  const { userId, classId } = req.body;
+router.post("/createSpace", async (req, res) => {
+  const { profileId, title } = req.body;
 
-  let session = null;
+  let session = null,
+    spaceObj;
 
   db.startSession()
     .then((_session) => {
       session = _session;
 
       session.startTransaction();
-      return Student.findOneAndUpdate(
-        {
-          userId,
-        },
-        {
-          $push: { classes: classId },
-        }
+      return SpaceModel.create(
+        [
+          {
+            title,
+            provider: profileId,
+          },
+        ],
+        { session }
       );
     })
-    .then(() => {
-      return ClassModel.findByIdAndUpdate(classId, {
-        $push: { students: userId },
+    .then(([arg]) => {
+      spaceObj = arg;
+
+      return Provider.findByIdAndUpdate(profileId, {
+        $push: { spaces: spaceObj._id },
       });
     })
     .then(() => {
       return session.commitTransaction();
     })
     .then(() => {
-      return res.send({ success: true });
+      return res.send({ space: spaceObj });
     })
     .catch((err) => {
       res.status(400).send({

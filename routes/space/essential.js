@@ -9,9 +9,9 @@ router.get("/", (_req, res) => {
 });
 
 router.get("/getMessages", async (req, res) => {
-  const { classId } = req.query;
+  const { spaceId } = req.query;
   try {
-    const messages = await Message.find({ classId });
+    const messages = await Message.find({ spaceId });
     return res.send({
       data: messages,
     });

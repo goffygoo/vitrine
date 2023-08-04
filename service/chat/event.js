@@ -18,27 +18,27 @@ const verifySendMessageDataToken = (dataToken) => {
 const sendMessage = (socket) => {
   socket.on(
     SOCKET_EVENTS.MESSAGE_SEND,
-    async ({ classId, message, dataToken }) => {
+    async ({ spaceId, message, dataToken }) => {
       // TODO: error handle
       const senderData = verifySendMessageDataToken(dataToken);
       if (!senderData) {
         // TODO: error handle
         return;
       }
-      const { classes, profilePicture, name } = senderData;
-      if (!classes?.includes(classId)) {
+      const { spaces, profilePicture, name } = senderData;
+      if (!spaces?.includes(spaceId)) {
         // TODO: error handle
         return;
       }
-      const roomId = SOCKET_ROOM_TAG.CLASS + classId;
+      const roomId = SOCKET_ROOM_TAG.SPACE + spaceId;
       await Message.create({
-        classId,
+        spaceId,
         message,
         senderName: name,
         senderProfilePicture: profilePicture,
       });
       emitToRoom(roomId, SOCKET_EVENTS.MESSAGE_RECEIVED, {
-        classId,
+        spaceId,
         message,
         senderName: name,
         senderProfilePicture: profilePicture,
