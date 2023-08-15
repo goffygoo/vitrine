@@ -1,6 +1,7 @@
 import express from "express";
 import Folder from "../../model/Folder.js";
 import File from "../../model/File.js";
+import axios from "axios";
 
 const router = express.Router();
 
@@ -87,16 +88,17 @@ router.post("/deleteFolder", async (req, res) => {
 });
 
 router.post("/addFile", async (req, res) => {
-  const { folderId, fileName } = req.body;
-
+  const { folderId, fileName, url } = req.body;
   try {
     await File.create({
       folderId,
       fileName,
+      url,
     });
-
+    const files = await File.find({ folderId });
     res.status(200).send({
       success: true,
+      data: files,
     });
   } catch (err) {
     res.status(400).send({
@@ -149,6 +151,26 @@ router.post("/deleteFile", async (req, res) => {
 
   try {
     await File.findByIdAndDelete(fileId);
+    res.status(200).send({
+      success: true,
+    });
+  } catch (err) {
+    res.status(400).send({
+      success: false,
+      message: `Something went wrong`,
+      err,
+    });
+    console.log(err);
+  }
+});
+
+router.post("/moveFile", async (req, res) => {
+  const { fileId, folderId } = req.body;
+
+  try {
+    await File.findByIdAndUpdate(fileId, {
+      folderId,
+    });
     res.status(200).send({
       success: true,
     });
