@@ -72,7 +72,6 @@ router.post("/updateForm", async (req, res) => {
 
   try {
     // TODO: Sanity check
-    console.log(formContent);
     await Form.findByIdAndUpdate(formId, {
       title: formContent.title,
       titleEditorContent: formContent.titleEditorContent,
