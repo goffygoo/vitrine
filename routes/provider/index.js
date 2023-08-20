@@ -1,5 +1,5 @@
 import express from "express";
-import spaceAction from "./spaceAction.js";
+import space from "./space.js";
 import profile from "./profile.js";
 import { HEADERS, USER_TYPES } from "./../../constants/index.js";
 import User from "../../model/User.js";
@@ -34,7 +34,7 @@ const validateProvider = async (req, res, next) => {
   next();
 };
 
-router.use("/space", validateProvider, spaceAction);
+router.use("/space", validateProvider, space);
 router.use("/profile", profile);
 
 router.get("/getAllSpaces", validateProvider, async (req, res) => {

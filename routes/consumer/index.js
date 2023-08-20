@@ -34,6 +34,7 @@ const validateConsumer = async (req, res, next) => {
   next();
 };
 
+// TODO: change spaceAction -> space and move APIs to /space
 router.use("/space", validateConsumer, spaceAction);
 router.use("/profile", profile);
 

@@ -4,6 +4,7 @@ import provider from "./provider/index.js";
 import consumer from "./consumer/index.js";
 import spaceRoute from "./space/index.js";
 import event from "./event/index.js";
+import community from "./community/index.js";
 
 const router = express.Router();
 
@@ -18,5 +19,6 @@ router.use("/provider", provider);
 router.use("/consumer", consumer);
 router.use("/space", spaceRoute);
 router.use("/event", event);
+router.use("/community", community);
 
 export default router;

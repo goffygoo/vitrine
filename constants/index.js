@@ -24,3 +24,11 @@ export const SOCKET_EVENTS = {
 };
 
 export const USER_PICTURE_DEFAULT = "/tempuser.jpg";
+
+export const MODEL_INDEX = {
+  PAGES: 'pages'
+}
+
+export const PAGE_TEMPLATES = [
+  "SKY"
+]
