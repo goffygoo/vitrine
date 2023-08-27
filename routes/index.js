@@ -6,6 +6,8 @@ import spaceRoute from "./space/index.js";
 import event from "./event/index.js";
 import community from "./community/index.js";
 import chat from "./chat/index.js";
+import platform from "./platform/index.js";
+import admin from "./admin/index.js";
 
 const router = express.Router();
 
@@ -22,5 +24,7 @@ router.use("/space", spaceRoute);
 router.use("/event", event);
 router.use("/community", community);
 router.use("/chat", chat);
+router.use("/platform", platform);
+router.use("/admin", admin);
 
 export default router;
