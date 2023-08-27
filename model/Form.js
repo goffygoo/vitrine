@@ -3,20 +3,20 @@ import mongoose from "mongoose";
 const { ObjectId } = mongoose.Schema.Types;
 
 const Schema = new mongoose.Schema({
-  spaceId: {
-    type: ObjectId,
-    required: true,
-  },
-  title: {
-    type: String,
-    required: true,
-  },
-  titleEditorContent: {
-    type: Object,
-  },
-  entities: {
-    type: Object,
-  },
+	spaceId: {
+		type: ObjectId,
+		required: true,
+	},
+	title: {
+		type: String,
+		required: true,
+	},
+	titleEditorContent: {
+		type: Object,
+	},
+	entities: {
+		type: Object,
+	},
 });
 
 export default mongoose.model("Form", Schema);
