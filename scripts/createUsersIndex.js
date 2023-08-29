@@ -60,8 +60,8 @@ await httpRequest(
 	"patch",
 	`${SEARCH_ENGINE}/indexes/${userIndex}/settings`,
 	{
-		displayedAttributes: ["id", "name", "type", "profilePicture"],
-		searchableAttributes: ["name", "email", "type"],
+		displayedAttributes: ["id", "name", "type"],
+		searchableAttributes: ["name", "type"],
 		filterableAttributes: [],
 		sortableAttributes: [],
 		rankingRules: [

@@ -2,20 +2,21 @@ import mongoose from "mongoose";
 
 const { ObjectId } = mongoose.Schema.Types;
 
-const Schema = new mongoose.Schema(
-	{
-		messages: [
-			{
-				type: Object,
-				required: true,
-			},
-		],
-		participants: {
-			type: [ObjectId],
-			required: true,
+const Schema = new mongoose.Schema({
+	messages: [
+		{
+			type: Object,
 		},
+	],
+	participants: [
+		{
+			id: ObjectId,
+			userType: String,
+		},
+	],
+	openedBy: {
+		type: ObjectId,
 	},
-	{ timestamps: true }
-);
+});
 
 export default mongoose.model("Chats", Schema);

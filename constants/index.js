@@ -20,6 +20,8 @@ export const SOCKET_ROOM_TAG = {
 export const SOCKET_EVENTS = {
 	MESSAGE_SEND: "chat-message-send",
 	MESSAGE_RECEIVED: "chat-message-received",
+	DIRECT_MESSAGE_SEND: "chat-dm-send",
+	DIRECT_MESSAGE_RECEIVED: "chat-dm-received",
 	JOIN_CHAT: "join-chat",
 };
 
