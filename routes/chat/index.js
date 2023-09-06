@@ -34,20 +34,10 @@ router.post("/getAllChats", async (req, res) => {
 				.map(async (chat) => {
 					const partnerIndx =
 						chat.participants[0].id.toString() === userId ? 1 : 0;
-					const Model =
-						chat.participants[partnerIndx].userType === USER_TYPES.CONSUMER
-							? Consumer
-							: Provider;
-					const partner = await Model.findById(
-						chat.participants[partnerIndx].id
-					).select({
-						userId: 0,
-						spaces: 0,
-					});
+					const partner = chat.participants[partnerIndx];
 					return {
 						_id: chat._id,
 						partner,
-						partnerType: chat.participants[partnerIndx].userType,
 						messages: chat.messages,
 						openedBy: chat.openedBy,
 					};
@@ -79,20 +69,10 @@ router.post("/getChat", async (req, res) => {
 		}
 
 		const partnerIndx = chat.participants[0].id.toString() === userId ? 1 : 0;
-		const Model =
-			chat.participants[partnerIndx].userType === USER_TYPES.CONSUMER
-				? Consumer
-				: Provider;
-		const partner = await Model.findById(
-			chat.participants[partnerIndx].id
-		).select({
-			userId: 0,
-			spaces: 0,
-		});
+		const partner = chat.participants[partnerIndx];
 		let finalData = {
 			_id: chat._id,
 			partner,
-			partnerType: chat.participants[partnerIndx].userType,
 			messages: chat.messages,
 			openedBy: chat.openedBy,
 		};
@@ -128,6 +108,20 @@ router.post("/createChat", async (req, res) => {
 			openedBy: partnerId,
 		});
 
+		const UModel = userType === USER_TYPES.CONSUMER ? Consumer : Provider;
+		const user = await UModel.findById(partnerId).select({
+			userId: 0,
+			spaces: 0,
+			address: 0,
+		});
+
+		const PModel = partnerType === USER_TYPES.CONSUMER ? Consumer : Provider;
+		const partner = await PModel.findById(partnerId).select({
+			userId: 0,
+			spaces: 0,
+			address: 0,
+		});
+
 		if (!chat) {
 			chat = await Chat.create({
 				messages: [],
@@ -135,10 +129,14 @@ router.post("/createChat", async (req, res) => {
 					{
 						id: userId,
 						userType: userType,
+						name: user.name,
+						profilePicture: user.profilePicture,
 					},
 					{
 						id: partnerId,
 						userType: partnerType,
+						name: partner.name,
+						profilePicture: partner.profilePicture,
 					},
 				],
 				openedBy: userId,
@@ -147,18 +145,11 @@ router.post("/createChat", async (req, res) => {
 			await Chat.updateOne({ _id: chat._id }, { openedBy: userId });
 		}
 
-		const Model = partnerType === USER_TYPES.CONSUMER ? Consumer : Provider;
-		const partner = await Model.findById(partnerId).select({
-			userId: 0,
-			spaces: 0,
-		});
-
 		return res.status(200).send({
 			success: true,
 			chat: {
 				_id: chat._id,
 				partner,
-				partnerType,
 				openedBy: userId,
 				messages: chat.messages,
 			},
