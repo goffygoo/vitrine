@@ -12,6 +12,8 @@ const Schema = new mongoose.Schema({
 		{
 			id: ObjectId,
 			userType: String,
+			name: String,
+			profilePicture: String,
 		},
 	],
 	openedBy: {
