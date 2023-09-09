@@ -32,4 +32,19 @@ export const MODEL_INDEX = {
 	USERS: "users",
 };
 
-export const PAGE_TEMPLATES = ["SKY"];
+export const PAGE_TEMPLATES = [
+  "SKY"
+]
+
+export const FORM_TYPES = {
+  EXERCISE: "EXERCISE",
+  SURVEY: "SURVEY",
+  FEEDBACK: "FEEDBACK",
+}
+
+export const FORM_ENTITY_TYPES = {
+  MCQ: "MCQ",
+  SHORT: "SHORT",
+  LONG: "LONG",
+  FILE: "FILE",
+}
