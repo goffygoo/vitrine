@@ -1,32 +1,21 @@
 import cron from "node-cron";
-import Event from "../model/Event.js";
-import Notif from "../service/notification/index.js";
+import Notification from "../service/notification/index.js";
+import Workflow from "../service/workflow/index.js";
 
-const eventScheduler = async () => {
-  const min30 = 30 * 60 * 1000;
-  const currentTime = Date.now() + min30;
-  const endTime = currentTime + min30;
+const scheduleSubscriptionEndNotification = () => {
+  cron.schedule("0 16 * * *", Workflow.Subscription.notifySubscriptionEnding);
+};
 
-  const events = await Event.find({
-    startTime: {
-      $lte: endTime,
-      $gte: currentTime,
-    },
-  });
-
-  const ids = events.map((event) => event._id.toString());
-
-  await Event.deleteMany({ _id: { $in: ids } });
-
-  events.forEach((event) => {
-    Notif.Events.createEventLocally(event.startTime);
-  });
+const scheduleSubscriptionDelete = () => {
+  cron.schedule("5 0 * * *", Workflow.Subscription.deleteSubscription);
 };
 
 const scheduleNotificationEvents = () => {
-  cron.schedule("0,30 * * * *", eventScheduler);
+  cron.schedule("0,30 * * * *", Notification.Handler.eventScheduler);
 };
 
 export default function initScheduler() {
+  scheduleSubscriptionEndNotification();
+  scheduleSubscriptionDelete();
   scheduleNotificationEvents();
 }

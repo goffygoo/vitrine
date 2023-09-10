@@ -8,7 +8,7 @@ export const USER_TYPES = {
 	ADMIN: "ADMIN",
 };
 
-export const EVENT_TYPES = {
+export const NOTIFICATION_EVENT_TYPES = {
 	CALL: "CALL",
 	EXAM: "EXAM",
 };

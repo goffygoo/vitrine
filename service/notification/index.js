@@ -1,7 +1,9 @@
-import Events from "./event.js";
+import Call from "./call.js";
+import Handler from "./handler.js";
 
-const Notif = {
-  Events,
+const Notification = {
+  Call,
+  Handler
 };
 
-export default Notif;
+export default Notification;
