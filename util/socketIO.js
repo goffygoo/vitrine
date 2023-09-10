@@ -31,6 +31,7 @@ export const initConnection = (server) => {
 	io.use(async (socket, next) => {
 		// TODO: error handling
 		const profileId = socket.handshake.auth.profileId;
+		if (connectedUserIds[profileId]) return;
 		console.log("connect:", profileId);
 		connectedUserIds[profileId] = socket.id;
 		connectedSocketIds[socket.id] = profileId;

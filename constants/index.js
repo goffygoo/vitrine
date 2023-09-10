@@ -33,3 +33,9 @@ export const MODEL_INDEX = {
 };
 
 export const PAGE_TEMPLATES = ["SKY"];
+
+export const ORDER_PLAN_TYPES = {
+	BUY: "BUY",
+	MONTHLY: "MONTHLY",
+	YEARLY: "YEARLY",
+};
