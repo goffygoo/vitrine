@@ -8,7 +8,7 @@ import community from "./community/index.js";
 import chat from "./chat/index.js";
 import platform from "./platform/index.js";
 import admin from "./admin/index.js";
-import monetization from "./monetization/index.js";
+import monet from "./monet/index.js";
 
 const router = express.Router();
 
@@ -27,6 +27,6 @@ router.use("/community", community);
 router.use("/chat", chat);
 router.use("/platform", platform);
 router.use("/admin", admin);
-router.use("/monet", monetization);
+router.use("/monet", monet);
 
 export default router;
