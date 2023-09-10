@@ -32,9 +32,13 @@ export const MODEL_INDEX = {
 	USERS: "users",
 };
 
-export const PAGE_TEMPLATES = [
-  "SKY"
-]
+export const PAGE_TEMPLATES = ["SKY"];
+
+export const ORDER_PLAN_TYPES = {
+	BUY: "BUY",
+	MONTHLY: "MONTHLY",
+	YEARLY: "YEARLY",
+};
 
 export const FORM_TYPES = {
   EXERCISE: "EXERCISE",
