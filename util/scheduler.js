@@ -3,7 +3,7 @@ import Notification from "../service/notification/index.js";
 import Workflow from "../service/workflow/index.js";
 
 const scheduleSubscriptionEndNotification = () => {
-	cron.schedule("0 16 * * *", Workflow.Subscription.notifySubscriptionEnding);
+	cron.schedule("0 11 * * *", Workflow.Subscription.notifySubscriptionEnding);
 };
 
 const scheduleSubscriptionDelete = () => {

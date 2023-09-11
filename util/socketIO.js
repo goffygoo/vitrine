@@ -32,16 +32,25 @@ export const initConnection = (server) => {
 		// TODO: error handling
 		const profileId = socket.handshake.auth.profileId;
 		if (connectedUserIds[profileId]) return;
-		console.log("connect:", profileId);
-		connectedUserIds[profileId] = socket.id;
-		connectedSocketIds[socket.id] = profileId;
+		if (profileId) {
+			console.log("connect:", profileId);
+			connectedUserIds[profileId] = socket.id;
+			connectedSocketIds[socket.id] = profileId;
+		}
 
 		const type = socket.handshake.auth.type;
-		const Model = type === USER_TYPES.CONSUMER ? Consumer : Provider;
-		const data = await Model.findById(profileId).select({
-			_id: 0,
-			spaces: 1,
-		});
+		let data;
+		try {
+			const Model = type === USER_TYPES.CONSUMER ? Consumer : Provider;
+			data = await Model.findById(profileId).select({
+				_id: 0,
+				spaces: 1,
+			});
+			console.log("user found");
+		} catch (err) {
+			console.log("error in sockets: ", err);
+			return next(new Error("Invalid Connection"));
+		}
 
 		data?.spaces?.forEach((spaceId) => {
 			const roomId = SOCKET_ROOM_TAG.SPACE + spaceId.toString();
@@ -59,6 +68,7 @@ export const initConnection = (server) => {
 
 		socket.on("disconnect", () => {
 			let profileId = connectedSocketIds[socket.id];
+			if (!profileId) return;
 			delete connectedSocketIds[socket.id];
 			delete connectedUserIds[profileId];
 			console.log("disconnect:", profileId);

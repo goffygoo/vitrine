@@ -108,6 +108,7 @@ router.post("/paymentConfirmation", async (req, res) => {
 		const { order } = req.body;
 
 		let session = null;
+		let subscription = null;
 
 		// TODO: Add necessary checks
 		// order confirmation using useragent identification
@@ -140,14 +141,15 @@ router.post("/paymentConfirmation", async (req, res) => {
 					item: order.item,
 				}).session(session);
 			})
-			.then((subscription) => {
+			.then((subs) => {
 				// console.log("check if subscription aready bought 2.2");
+				subscription = subs;
 				if (subscription?.planDetails === ORDER_PLAN_TYPES.BUY) {
 					throw Error("Course Already Bought");
 				}
-				return subscription;
+				return;
 			})
-			.then((subscription) => {
+			.then(() => {
 				// console.log("create billingdate 2.3");
 				let billingDate;
 				if (subscription) {
@@ -159,9 +161,9 @@ router.post("/paymentConfirmation", async (req, res) => {
 				} else {
 					billingDate = updateBillingDate(order.planDetails, false);
 				}
-				return [billingDate, subscription];
+				return billingDate;
 			})
-			.then(async ([billingDate, subscription]) => {
+			.then(async (billingDate) => {
 				// console.log("adding in subscription 2.4");
 				// if present, update
 				if (subscription) {
@@ -187,8 +189,11 @@ router.post("/paymentConfirmation", async (req, res) => {
 					{ session: session }
 				);
 			})
-			.then((_subscription) => {
+			.then(() => {
 				// console.log("updating space 3");
+				if (subscription) {
+					return SpaceModel.findById(order.item).session(session);
+				}
 				return SpaceModel.findByIdAndUpdate(order.item, {
 					$push: { consumer: order.consumer },
 				}).session(session);
@@ -216,13 +221,14 @@ router.post("/paymentConfirmation", async (req, res) => {
 					await Payout.findByIdAndUpdate(payout._id, {
 						amount: payout.amount + order.amount,
 						$push: {
-							description: `\n\nAmount: Rs ${order.amount} for order id:${order._id}`,
+							description: `Amount: Rs ${order.amount} for order id:${order._id}`,
 						},
 					}).session(session);
 				}
 			})
 			.then(() => {
 				// console.log("updating consumer 5");
+				if (subscription) return;
 				return Consumer.findByIdAndUpdate(order.consumer, {
 					$push: { spaces: order.item },
 				}).session(session);

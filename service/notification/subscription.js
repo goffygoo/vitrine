@@ -1,13 +1,13 @@
-import { notifyImmediately } from "./actions.js";
+import { notifyUserImmediately } from "./actions.js";
 
-const createLocally = (endTime) => {
-  const event = "event-name-here";
-  const data = { data: `subscription ending on:`, time: endTime };
-  notifyImmediately(event, data)
-}
+const createLocally = (profileId, endTime) => {
+	const event = "subscription-ending-notification";
+	const data = `subscription ending on time: ${endTime}`;
+	notifyUserImmediately(profileId, event, data);
+};
 
 const Subscription = {
-  createLocally
+	createLocally,
 };
 
 export default Subscription;
