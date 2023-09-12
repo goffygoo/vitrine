@@ -52,3 +52,12 @@ export const FORM_ENTITY_TYPES = {
   LONG: "LONG",
   FILE: "FILE",
 }
+
+export const CALENDER_EVENT_TYPES = {
+	CALL: "CALL",
+};
+
+export const CALENDER_EVENT_SLOT_TYPES = {
+	TIMED: "TIMED",
+	ALL_DAY: "ALL_DAY",
+};

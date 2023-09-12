@@ -3,7 +3,8 @@ import { getHashString } from "../../util/index.js";
 import axios from "axios";
 import Call from "../../model/Call.js";
 import Notification from "../../service/notification/index.js";
-import Cache from "../../service/cache/index.js";
+import Calander from "../../service/calender/index.js";
+import { CALENDER_EVENT_SLOT_TYPES, CALENDER_EVENT_TYPES } from "../../constants/index.js";
 
 const router = express.Router();
 
@@ -69,6 +70,7 @@ router.post("/addCall", getGoogleMeetLink, async (req, res) => {
   const googleMeet = res.locals.googleMeetLink;
 
   try {
+    // TODO: Transactions?
     const call = await Call.create({
       title,
       spaceId,
@@ -79,11 +81,18 @@ router.post("/addCall", getGoogleMeetLink, async (req, res) => {
       participants,
     });
 
-    participants.forEach((id) => {
-      Cache.Events.addResetFlag(id);
-    });
-
-    await Notification.Call.addCall(call);
+    await Promise.all([
+      ...participants.map((id) => Calander.addEventForUser(
+        id,
+        CALENDER_EVENT_TYPES.CALL,
+        CALENDER_EVENT_SLOT_TYPES.TIMED,
+        true,
+        call._id,
+        startTime,
+        endTime
+      )),
+      Notification.Call.addCall(call)
+    ])
 
     return res.send({
       success: true,
