@@ -1,7 +1,6 @@
 import nodemailer from "nodemailer";
-import { USER_TYPES } from "../constants/index.js";
-import User from "../model/User.js";
-import { getResetPasswordHtml, getVerifyHtml } from "./emailHtmlBuilder.js";
+import User from "../../model/User.js";
+import { getResetPasswordHtml, getSubscriptionEndNotificationHtml, getSubscriptionEndedHtml, getVerifyHtml } from "./emailHtmlBuilder.js";
 
 let transporter = nodemailer.createTransport({
 	service: "gmail",
@@ -78,3 +77,19 @@ export const sendMailToUser = async (profileId, subject, html) => {
 		console.log(err);
 	}
 };
+
+export const sendSubscriptionEndedMail = (profileId, ...htmlParams) => {
+	return sendMailToUser(
+		profileId,
+		"Subscription Ended",
+		getSubscriptionEndedHtml(...htmlParams)
+	)
+}
+
+export const sendSubscriptionEndNotificationMail = (profileId, ...htmlParams) => {
+	return sendMailToUser(
+		profileId,
+		"Subscription Ending Soon",
+		getSubscriptionEndNotificationHtml(...htmlParams)
+	)
+}
