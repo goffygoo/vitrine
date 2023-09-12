@@ -2,7 +2,7 @@ import express from "express";
 import TempToken from "../../model/TempToken.js";
 import User from "../../model/User.js";
 import db from "../../util/db.js";
-import { sendResetPasswordMail, sendVerifyMail } from "../../util/mailer.js";
+import { sendResetPasswordMail, sendVerifyMail } from "../../util/mailer/index.js";
 import { randomUUID } from "crypto";
 import jwt from "jsonwebtoken";
 import TempLink from "../../model/TempLink.js";

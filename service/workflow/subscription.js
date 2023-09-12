@@ -1,10 +1,6 @@
 import Consumer from "../../model/Consumer.js";
 import SubscriptionModel from "../../model/Subscription.js";
-import {
-	getSubscriptionEndNotificationHtml,
-	getSubscriptionEndedHtml,
-} from "../../util/emailHtmlBuilder.js";
-import { sendMailToUser } from "../../util/mailer.js";
+import { sendSubscriptionEndNotificationMail, sendSubscriptionEndedMail } from "../../util/mailer/index.js";
 import SpaceModel from "../../model/SpaceModel.js";
 import db from "../../util/db.js";
 
@@ -15,6 +11,7 @@ const notifySubscriptionEnding = async () => {
 	const startTime = Date.now() + week1;
 	const endTime = startTime + day1;
 
+	// TODO: parallel call?
 	let subscriptions;
 	try {
 		subscriptions = await SubscriptionModel.find({
@@ -29,14 +26,11 @@ const notifySubscriptionEnding = async () => {
 
 	subscriptions?.forEach(async (subscription) => {
 		console.log(subscription.consumer.toString());
-		await sendMailToUser(
+		await sendSubscriptionEndNotificationMail(
 			subscription.consumer,
-			"Subscription Ending Soon",
-			getSubscriptionEndNotificationHtml(
-				subscription.item,
-				subscription.consumer
-			)
-		);
+			subscription.item, 
+			subscription.consumer
+		)
 	});
 	//
 };
@@ -51,6 +45,7 @@ const deleteSubscription = async () => {
 		},
 	});
 
+	// TODO: parallel call?
 	subscriptions.forEach(async (subscription) => {
 		try {
 			// remove space from consumer
@@ -77,11 +72,11 @@ const deleteSubscription = async () => {
 					);
 				})
 				.then(() => {
-					return sendMailToUser(
+					return sendSubscriptionEndedMail(
 						subscription.consumer,
-						"Subscription Ended",
-						getSubscriptionEndedHtml(subscription.item, subscription.consumer)
-					);
+						subscription.item, 
+						subscription.consumer
+					)
 				})
 				.then(() => {
 					return session.commitTransaction();
