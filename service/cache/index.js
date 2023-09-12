@@ -1,12 +1,10 @@
-import Events from "./events.js";
 import Switch from "./switch.js";
 
 const clearCache = () => {
-  Events.clear();
+  Switch.clear();
 }
 
 const Cache = {
-  Events,
   Switch,
   clearCache
 };
