@@ -2,7 +2,8 @@ import { Server } from "socket.io";
 import Consumer from "../model/Consumer.js";
 import Provider from "../model/Provider.js";
 import { USER_TYPES, SOCKET_ROOM_TAG } from "../constants/index.js";
-import chatService from "../service/chat/index.js";
+import Chat from "../service/chat/index.js";
+import Cache from "../service/cache/index.js";
 
 const SOCKET_TOKEN = "SOCKET_TOKEN";
 
@@ -29,35 +30,32 @@ export const initConnection = (server) => {
 	});
 
 	io.use(async (socket, next) => {
-		// TODO: error handling
 		const profileId = socket.handshake.auth.profileId;
-		if (connectedUserIds[profileId]) return;
-		if (profileId) {
-			console.log("connect:", profileId);
-			connectedUserIds[profileId] = socket.id;
-			connectedSocketIds[socket.id] = profileId;
-		}
-
 		const type = socket.handshake.auth.type;
-		let data;
 		try {
-			const Model = type === USER_TYPES.CONSUMER ? Consumer : Provider;
-			data = await Model.findById(profileId).select({
+			const Model = {
+				[USER_TYPES.CONSUMER]: Consumer,
+				[USER_TYPES.PROVIDER]: Provider,
+			}[type];
+			const profile = await Model.findById(profileId).select({
 				_id: 0,
+				userId: 1,
 				spaces: 1,
 			});
-			console.log("user found");
+
+			if (!profile) throw Error('User not found')
+
+			Cache.Socket.addId(profile.userId, socket.id);
+			socket.userId = profile.userId;
+			profile.spaces?.forEach((spaceId) => {
+				const roomId = SOCKET_ROOM_TAG.SPACE + spaceId.toString();
+				socket.join(roomId);
+			});
+			return next();
 		} catch (err) {
 			console.log("error in sockets: ", err);
 			return next(new Error("Invalid Connection"));
 		}
-
-		data?.spaces?.forEach((spaceId) => {
-			const roomId = SOCKET_ROOM_TAG.SPACE + spaceId.toString();
-			socket.join(roomId);
-		});
-
-		next();
 	});
 
 	io.on("connection", (socket) => {
@@ -67,14 +65,10 @@ export const initConnection = (server) => {
 		});
 
 		socket.on("disconnect", () => {
-			let profileId = connectedSocketIds[socket.id];
-			if (!profileId) return;
-			delete connectedSocketIds[socket.id];
-			delete connectedUserIds[profileId];
-			console.log("disconnect:", profileId);
+			Cache.Socket.deleteId(socket.userId, socket.id);
 		});
 
-		chatService.Events.registerEvents(socket);
+		Chat.Events.registerEvents(socket);
 	});
 };
 
@@ -87,9 +81,7 @@ export const emitToRoom = (roomId, event, data) => {
 };
 
 export const emitToUser = (userId, event, data) => {
-	const socketId = connectedUserIds[userId];
-	if (!socketId) return;
-	io.to(socketId).emit(event, data);
+	io.to(Cache.Socket.getIds(userId)).emit(event, data);
 };
 
 export default io;

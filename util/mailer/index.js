@@ -53,9 +53,9 @@ export const sendResetPasswordMail = async (email, token) => {
 	});
 };
 
-export const sendMailToUser = async (profileId, subject, html) => {
+export const sendMailToUser = async (userId, subject, html) => {
 	try {
-		const user = await User.findOne({ profileId });
+		const user = await User.findById(userId);
 		if (!user) throw Error("User not found");
 		let mailOptions = {
 			from: '"Kul Bois" <kulbois007@gmail.com>',
@@ -78,17 +78,17 @@ export const sendMailToUser = async (profileId, subject, html) => {
 	}
 };
 
-export const sendSubscriptionEndedMail = (profileId, ...htmlParams) => {
+export const sendSubscriptionEndedMail = (userId, ...htmlParams) => {
 	return sendMailToUser(
-		profileId,
+		userId,
 		"Subscription Ended",
 		getSubscriptionEndedHtml(...htmlParams)
 	)
 }
 
-export const sendSubscriptionEndNotificationMail = (profileId, ...htmlParams) => {
+export const sendSubscriptionEndNotificationMail = (userId, ...htmlParams) => {
 	return sendMailToUser(
-		profileId,
+		userId,
 		"Subscription Ending Soon",
 		getSubscriptionEndNotificationHtml(...htmlParams)
 	)
