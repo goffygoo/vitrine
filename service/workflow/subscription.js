@@ -3,6 +3,7 @@ import SubscriptionModel from "../../model/Subscription.js";
 import { sendSubscriptionEndNotificationMail, sendSubscriptionEndedMail } from "../../util/mailer/index.js";
 import SpaceModel from "../../model/SpaceModel.js";
 import db from "../../util/db.js";
+import User from "../../model/User.js";
 
 const notifySubscriptionEnding = async () => {
 	console.log("hi, please end notifs");
@@ -26,8 +27,9 @@ const notifySubscriptionEnding = async () => {
 
 	subscriptions?.forEach(async (subscription) => {
 		console.log(subscription.consumer.toString());
+		const user = await User.findOne({profileId: subscription.consumer}).select({_id: 1})
 		await sendSubscriptionEndNotificationMail(
-			subscription.consumer,
+			user._id,
 			subscription.item, 
 			subscription.consumer
 		)
@@ -72,8 +74,11 @@ const deleteSubscription = async () => {
 					);
 				})
 				.then(() => {
+					return User.findOne({profileId: subscription.consumer}).select({_id: 1})
+				})
+				.then((user) => {
 					return sendSubscriptionEndedMail(
-						subscription.consumer,
+						user._id,
 						subscription.item, 
 						subscription.consumer
 					)

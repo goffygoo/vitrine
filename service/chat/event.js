@@ -1,7 +1,6 @@
 import { SOCKET_EVENTS, SOCKET_ROOM_TAG } from "../../constants/index.js";
-import Chat from "../../model/Chat.js";
 import Message from "../../model/Message.js";
-import { emitToRoom, emitToUser } from "../../util/socketIO.js";
+import { emitToRoom } from "../../util/socketIO.js";
 import config from "../../constants/config.js";
 import jwt from "jsonwebtoken";
 const { JWT_SECRET_KEY } = config;
@@ -48,36 +47,7 @@ const sendMessage = (socket) => {
 	);
 };
 
-const sendDM = (socket) => {
-	socket.on(
-		SOCKET_EVENTS.DIRECT_MESSAGE_SEND,
-		async ({ chatId, sender, reciever, data, timestamp }) => {
-			// TODO: error handle
-			// const senderData = verifySendMessageDataToken(dataToken);
-			// if (!senderData) {
-			//   // TODO: error handle
-			//   return;
-			// }
-			await Chat.findByIdAndUpdate(chatId, {
-				$push: {
-					messages: {
-						sender,
-						reciever,
-						data,
-						timestamp,
-					},
-				},
-			});
-			emitToUser(reciever, SOCKET_EVENTS.DIRECT_MESSAGE_RECEIVED, {
-				chatId,
-				sender,
-				reciever,
-				data,
-				timestamp,
-			});
-		}
-	);
-};
+const sendDM = (socket) => {};
 
 const registerEvents = (socket) => {
 	sendMessage(socket);
