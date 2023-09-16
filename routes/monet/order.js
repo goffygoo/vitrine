@@ -7,6 +7,7 @@ import { ORDER_PLAN_TYPES } from "../../constants/index.js";
 import Consumer from "../../model/Consumer.js";
 import Payout from "../../model/Payout.js";
 import DraftOrder from "../../model/DraftOrder.js";
+import Payment from "../../service/payment/index.js";
 
 const router = express.Router();
 
@@ -43,7 +44,7 @@ router.post("/createOrder", async (req, res) => {
 		// }, 5000);
 
 		// create order
-		const order = await DraftOrder.create({
+		let order = await DraftOrder.create({
 			consumer: userId,
 			itemType,
 			item,
@@ -51,10 +52,17 @@ router.post("/createOrder", async (req, res) => {
 			planDetails,
 		});
 
+		const paymentOrder = await Payment.Order.createPaymentOrder(order);
+
+		order = await DraftOrder.findByIdAndUpdate(order._id, {
+			paymentOrder: paymentOrder,
+		});
+
 		// send order details
 		return res.status(200).send({
 			success: true,
 			order,
+			paymentDetails: paymentOrder,
 		});
 	} catch (err) {
 		return res.status(400).send({
@@ -88,6 +96,37 @@ router.post("/cancelOrder", async (req, res) => {
 	}
 });
 
+router.post("/getCart", async (req, res) => {
+	try {
+		const { userId } = req.body;
+
+		// TODO: Add necessary checks
+
+		// TODO: set confirmation timer
+		// setTimeout(() => {
+		// 	console.log("run confirmation timer");
+		// }, 5000);
+
+		const order = await DraftOrder.findOne({ consumer: userId });
+		if (!order) {
+			return res.status(400).send({
+				success: false,
+				message: "No Item in Cart",
+			});
+		}
+
+		return res.status(200).send({
+			success: true,
+			order,
+		});
+	} catch (err) {
+		return res.status(400).send({
+			success: false,
+			error: err,
+		});
+	}
+});
+
 const updateBillingDate = (planDetails, addOn, billingDate = null) => {
 	if (planDetails === ORDER_PLAN_TYPES.BUY) return null;
 	let newBillDate;
@@ -103,26 +142,140 @@ const updateBillingDate = (planDetails, addOn, billingDate = null) => {
 	return newBillDate;
 };
 
+router.post("/confirmPaymentTester", async (req, res) => {
+	try {
+		const { razorpayOrderId, razorpayPaymentId, razorpayPaymentSignature } =
+			req.body;
+
+		const paymentOrder = await Payment.Order.fetchPaymentOrder(razorpayOrderId);
+		if (!paymentOrder)
+			return res.status(400).send({
+				success: false,
+				message: "Nice try kiddo, wrong razorpayOrderId",
+			});
+
+		const order = await DraftOrder.findById(paymentOrder.receipt);
+		if (!order) {
+			return res.status(400).send({
+				success: false,
+				message: "Order not found",
+			});
+		}
+
+		const paymentOrderId = order.paymentOrder.id;
+
+		if (paymentOrderId !== razorpayOrderId) {
+			return res.status(400).send({
+				success: false,
+				message: "Oli beta masti nahi, wrong paymentOrderId",
+			});
+		}
+
+		const validatePaymentSignature = Payment.Order.verifyPaymentSignature(
+			paymentOrderId,
+			razorpayPaymentId,
+			razorpayPaymentSignature
+		);
+
+		if (!validatePaymentSignature)
+			return res.status(400).send({
+				success: false,
+				message: "Oli beta masti nahi, signature failed",
+			});
+
+		const paymentStatus = await Payment.Order.checkPaymentStatus(
+			razorpayPaymentId
+		);
+
+		if (!paymentStatus.captured) {
+			return res.status(400).send({
+				success: false,
+				message: "Payment not received, Please be patient",
+			});
+		}
+
+		await DraftOrder.findByIdAndUpdate(order._id, {
+			paymentDetails: paymentStatus,
+		});
+
+		// TODO: Add necessary checks
+
+		return res.status(200).send({
+			success: true,
+			message: "Thanks for the payment Chomu, HAHA",
+		});
+	} catch (err) {
+		return res.status(400).send({
+			success: false,
+			error: err,
+		});
+	}
+});
+
 router.post("/paymentConfirmation", async (req, res) => {
 	try {
-		const { order } = req.body;
+		// payment confirm
+		const { razorpayOrderId, razorpayPaymentId, razorpayPaymentSignature } =
+			req.body;
+
+		const paymentOrder = await Payment.Order.fetchPaymentOrder(razorpayOrderId);
+		if (!paymentOrder)
+			return res.status(400).send({
+				success: false,
+				message: "Nice try kiddo, wrong razorpayOrderId",
+			});
+
+		const order = await DraftOrder.findById(paymentOrder.receipt);
+		if (!order) {
+			return res.status(400).send({
+				success: false,
+				message: "Order not found",
+			});
+		}
+
+		const paymentOrderId = order.paymentOrder.id;
+
+		if (paymentOrderId !== razorpayOrderId) {
+			return res.status(400).send({
+				success: false,
+				message: "Oli beta masti nahi, wrong paymentOrderId",
+			});
+		}
+
+		const validatePaymentSignature = Payment.Order.verifyPaymentSignature(
+			paymentOrderId,
+			razorpayPaymentId,
+			razorpayPaymentSignature
+		);
+
+		if (!validatePaymentSignature)
+			return res.status(400).send({
+				success: false,
+				message: "Oli beta masti nahi, signature failed",
+			});
+
+		const paymentStatus = await Payment.Order.checkPaymentStatus(
+			razorpayPaymentId
+		);
+
+		if (!paymentStatus.captured) {
+			return res.status(400).send({
+				success: false,
+				message: "Payment not received, Please be patient",
+			});
+		}
+
+		await DraftOrder.findByIdAndUpdate(order._id, {
+			paymentDetails: paymentStatus,
+		});
+
+		// subscribe, payout, consumer, draftorder, order, space
 
 		let session = null;
 		let subscription = null;
 
 		// TODO: Add necessary checks
 		// order confirmation using useragent identification
-		const checkOrder = await DraftOrder.findById(order._id);
-		if (
-			!checkOrder ||
-			checkOrder.transaction === "ABORTED" ||
-			checkOrder.transaction === "DONE"
-		)
-			return res.status(400).send({
-				success: false,
-				message: `Order invalid`,
-			});
-
 		// add to subscription model
 		// add payout value to provider
 		// add user to space
@@ -243,6 +396,7 @@ router.post("/paymentConfirmation", async (req, res) => {
 							item: order.item,
 							amount: order.amount,
 							planDetails: order.planDetails,
+							paymentDetails: paymentStatus,
 						},
 					],
 					{

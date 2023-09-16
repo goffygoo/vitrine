@@ -39,6 +39,12 @@ const Schema = new mongoose.Schema(
 			enum: ["ABORTED", "DONE", "ONGOING"],
 			default: "ONGOING",
 		},
+		paymentOrder: {
+			type: Object,
+		},
+		paymentDetails: {
+			type: Object,
+		},
 	},
 	{
 		timestamps: true,
