@@ -9,6 +9,7 @@ import chat from "./chat/index.js";
 import platform from "./platform/index.js";
 import admin from "./admin/index.js";
 import monet from "./monet/index.js";
+import test from "./test/index.js";
 
 const router = express.Router();
 
@@ -28,5 +29,6 @@ router.use("/chat", chat);
 router.use("/platform", platform);
 router.use("/admin", admin);
 router.use("/monet", monet);
+router.use("/test", test);
 
 export default router;

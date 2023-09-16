@@ -34,6 +34,9 @@ const Schema = new mongoose.Schema(
 			type: Number,
 			required: true,
 		},
+		paymentDetails: {
+			type: Object,
+		},
 	},
 	{
 		timestamps: true,
