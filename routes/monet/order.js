@@ -203,6 +203,7 @@ router.post("/confirmPaymentTester", async (req, res) => {
 		return res.status(200).send({
 			success: true,
 			message: "Thanks for the payment Chomu, HAHA",
+			paymentStatus,
 		});
 	} catch (err) {
 		return res.status(400).send({
