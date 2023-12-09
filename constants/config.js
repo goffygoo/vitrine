@@ -10,4 +10,7 @@ export default {
 	JWT_SECRET_KEY: "chillyIsBestFriendMaterial",
 	RAZORPAY_KEY_ID: "rzp_test_D68Znn6J9zSBFu",
 	RAZORPAY_KEY_SECRET: "vVKiZ2qJe9oS1prADU2Brjjq",
+	GOOGLE_CLIENT_ID_ANDROID: 
+		"719286156722-bs49veig3nkf65n7eel8jalb1j10taue.apps.googleusercontent.com",
+	GOOGLE_CLIENT_SECRET_ANDROID: "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",
 };
