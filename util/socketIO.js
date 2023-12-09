@@ -5,21 +5,17 @@ import { USER_TYPES, SOCKET_ROOM_TAG } from "../constants/index.js";
 import Chat from "../service/chat/index.js";
 import Cache from "../service/cache/index.js";
 
-const SOCKET_TOKEN = "SOCKET_TOKEN";
-
-let io;
-export const connectedSocketIds = {};
-export const connectedUserIds = {};
+let Singleton;
 
 export const initConnection = (server) => {
-	io = new Server(server, {
+	Singleton = new Server(server, {
 		cors: {
 			origin: "*",
 			methods: ["GET", "POST"],
 		},
 	});
 
-	io.use((socket, next) => {
+	Singleton.use((socket, next) => {
 		next();
 		// const token = socket.handshake.auth.token;
 		// if (token === SOCKET_TOKEN) {
@@ -29,7 +25,7 @@ export const initConnection = (server) => {
 		// }
 	});
 
-	io.use(async (socket, next) => {
+	Singleton.use(async (socket, next) => {
 		const profileId = socket.handshake.auth.profileId;
 		const type = socket.handshake.auth.type;
 		try {
@@ -58,7 +54,7 @@ export const initConnection = (server) => {
 		}
 	});
 
-	io.on("connection", (socket) => {
+	Singleton.on("connection", (socket) => {
 		socket.on("ping", () => {
 			console.log("Message sent");
 			emit("reply", 200);
@@ -73,15 +69,13 @@ export const initConnection = (server) => {
 };
 
 export const emit = (event, data) => {
-	io.emit(event, data);
+	Singleton.emit(event, data);
 };
 
 export const emitToRoom = (roomId, event, data) => {
-	io.to(roomId).emit(event, data);
+	Singleton.to(roomId).emit(event, data);
 };
 
 export const emitToUser = (userId, event, data) => {
-	io.to(Cache.Socket.getIds(userId)).emit(event, data);
+	Singleton.to(Cache.Socket.getIds(userId)).emit(event, data);
 };
-
-export default io;
