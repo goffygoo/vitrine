@@ -14,7 +14,7 @@ const Schema = new mongoose.Schema({
     default: false,
   },
   googleAuth: {
-    type: Boolean,
+    type: String,
   },
   password: {
     type: String,

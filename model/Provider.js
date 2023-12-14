@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
-import Address from "./Schema/Address.js";
-import { USER_PICTURE_DEFAULT } from "../constants/index.js";
+import {
+  USER_PICTURE_DEFAULT,
+  COVER_PICTURE_DEFAULT,
+} from "../constants/index.js";
 
 const { ObjectId } = mongoose.Schema.Types;
 
@@ -13,9 +15,6 @@ const Schema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  address: {
-    type: Address,
-  },
   spaces: {
     type: [ObjectId],
     default: [],
@@ -23,6 +22,34 @@ const Schema = new mongoose.Schema({
   profilePicture: {
     type: String,
     default: USER_PICTURE_DEFAULT,
+  },
+  coverPicture: {
+    type: String,
+    default: COVER_PICTURE_DEFAULT,
+  },
+  instagram: {
+    type: String,
+    default: "",
+  },
+  x: {
+    type: String,
+    default: "",
+  },
+  linkedIn: {
+    type: String,
+    default: "",
+  },
+  about: {
+    type: String,
+    default: "",
+  },
+  workingHours: {
+    type: String,
+    default: "9 am - 5 pm",
+  },
+  offDays: {
+    type: [String],
+    default: [],
   },
 });
 

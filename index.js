@@ -21,5 +21,5 @@ initScheduler();
 app.use("/api", router);
 
 server.listen(PORT, () => {
-	console.log(`Server starting in port: ${PORT}`);
+  console.log(`Server starting in port: ${PORT}`);
 });

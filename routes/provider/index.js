@@ -7,6 +7,17 @@ import Provider from "../../model/Provider.js";
 import SpaceModel from "../../model/SpaceModel.js";
 import db from "../../util/db.js";
 
+/*
+delete/modify - critical
+verify-access
+
+level - 0 community page
+level - 1 auth level
+level - 2 space -> member
+level - 3 space delete/remove admin
+level - 4 super admin
+
+*/
 const { USER_ID } = HEADERS;
 
 const router = express.Router();
@@ -38,9 +49,9 @@ router.use("/space", validateProvider, space);
 router.use("/profile", profile);
 
 router.get("/getAllSpaces", validateProvider, async (req, res) => {
-  const id = req.query.profileId;
+  const { profileId } = res.locals.data;
 
-  const provider = await Provider.findById(id).select({
+  const provider = await Provider.findById(profileId).select({
     spaces: 1,
   });
 
@@ -64,49 +75,58 @@ router.get("/getAllSpaces", validateProvider, async (req, res) => {
 });
 
 router.post("/createSpace", async (req, res) => {
-  const { profileId, title } = req.body;
+  const { title, description } = req.body;
+  const { profileId, type, email } = res.locals.data;
+  if (type === USER_TYPES.PROVIDER) {
+    let session = null,
+      spaceObj;
 
-  let session = null,
-    spaceObj;
+    db.startSession()
+      .then((_session) => {
+        session = _session;
 
-  db.startSession()
-    .then((_session) => {
-      session = _session;
+        session.startTransaction();
+        return SpaceModel.create(
+          [
+            {
+              title,
+              description,
+              provider: profileId,
+              meetAttendees: [email],
+            },
+          ],
+          { session }
+        );
+      })
+      .then(([arg]) => {
+        spaceObj = arg;
 
-      session.startTransaction();
-      return SpaceModel.create(
-        [
-          {
-            title,
-            provider: profileId,
-          },
-        ],
-        { session }
-      );
-    })
-    .then(([arg]) => {
-      spaceObj = arg;
-
-      return Provider.findByIdAndUpdate(profileId, {
-        $push: { spaces: spaceObj._id },
+        return Provider.findByIdAndUpdate(profileId, {
+          $push: { spaces: spaceObj._id },
+        });
+      })
+      .then(() => {
+        return session.commitTransaction();
+      })
+      .then(() => {
+        return res.send({ space: spaceObj, message: "Added Successfully" });
+      })
+      .catch((err) => {
+        res.status(400).send({
+          success: false,
+          message: `Something went error: ${err}`,
+        });
+        return session.abortTransaction();
+      })
+      .finally(() => {
+        return session.endSession();
       });
-    })
-    .then(() => {
-      return session.commitTransaction();
-    })
-    .then(() => {
-      return res.send({ space: spaceObj });
-    })
-    .catch((err) => {
-      res.status(400).send({
-        success: false,
-        message: `Something went error: ${err}`,
-      });
-      return session.abortTransaction();
-    })
-    .finally(() => {
-      return session.endSession();
+  } else {
+    res.status(400).send({
+      success: false,
+      message: `Something went error.`,
     });
+  }
 });
 
 export default router;

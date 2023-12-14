@@ -1,12 +1,16 @@
 import express from "express";
 import User from "../../model/User.js";
-import config from '../../constants/config.js'
+import config from "../../constants/config.js";
 import jwt from "jsonwebtoken";
 import axios from "axios";
 
-const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_TOKEN_URL } = config;
+const {
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  GOOGLE_TOKEN_URL,
+  JWT_SECRET_KEY,
+} = config;
 
-const SECRET = "SECRET";
 const ACCESS_TOKEN_EXPIRE_TIME = "30m";
 
 const router = express.Router();
@@ -18,10 +22,11 @@ router.get("/", (_req, res) => {
 });
 
 router.post("/newAccessToken", async (req, res) => {
-  const { id, refreshToken } = req.body;
+  const { userId, refreshToken } = req.body;
 
-  const user = await User.findById(id).select({
+  const user = await User.findById(userId).select({
     refreshToken: 1,
+    profileId: 1,
     tokenEAT: 1,
     type: 1,
   });
@@ -36,11 +41,12 @@ router.post("/newAccessToken", async (req, res) => {
   }
 
   const payload = {
-    id,
+    userId,
     type: user.type,
+    profileId: user.profileId,
   };
 
-  const accessToken = jwt.sign(payload, SECRET, {
+  const accessToken = jwt.sign(payload, JWT_SECRET_KEY, {
     expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
   });
 
@@ -86,15 +92,12 @@ router.post("/googleAuth", async (req, res) => {
       {}
     )
     .then(({ data }) => {
-      const {
-        access_token,
-        refresh_token,
-      } = data;
+      const { access_token, refresh_token } = data;
 
       res.send({
         googleAuth: {
           access_token,
-          refresh_token
+          refresh_token,
         },
       });
     })
