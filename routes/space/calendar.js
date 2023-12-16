@@ -82,7 +82,7 @@ const getGoogleMeetLink = async (req, res, next) => {
   } else {
     return res.status(204).send({
       message: "User needs to login",
-      type: 'INTEGRATE-GOOGLE-AGAIN'
+      type: "INTEGRATE-GOOGLE-AGAIN",
     });
   }
 };
@@ -113,18 +113,20 @@ router.post("/addCall", getGoogleMeetLink, async (req, res) => {
           id,
           CALENDER_EVENT_TYPES.CALL,
           CALENDER_EVENT_SLOT_TYPES.TIMED,
-          true,
+          false,
           call._id,
           startTime,
           endTime
         )
       ),
       Notification.Call.addCall(call),
-    ]);
-
+    ])
+    console.log(res.locals.data.profileId);
+    const events = await Calander.getAllEvents(res.locals.data.profileId);
     return res.send({
       success: true,
-      message: "Event added successfully."
+      message: "Event added successfully.",
+      events,
     });
   } catch (err) {
     console.log(err);
