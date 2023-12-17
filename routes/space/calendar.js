@@ -4,6 +4,7 @@ import axios from "axios";
 import Call from "../../model/Call.js";
 import Notification from "../../service/notification/index.js";
 import Calander from "../../service/calender/index.js";
+import Watcher from "@baljeetkode/watcher";
 import {
   CALENDER_EVENT_SLOT_TYPES,
   CALENDER_EVENT_TYPES,
@@ -88,7 +89,11 @@ const getGoogleMeetLink = async (req, res, next) => {
 };
 
 router.post("/addCall", getGoogleMeetLink, async (req, res) => {
-  console.log("addcall");
+  Watcher.log({
+    key1: "addCall",
+    key2: "created",
+    data: JSON.stringify({ women: "addcall" }),
+  });
   const { title, spaceId, description, startTime, endTime } = req.body;
   const { consumer: participants, provider } = await SpaceModel.findById(
     spaceId
@@ -120,7 +125,7 @@ router.post("/addCall", getGoogleMeetLink, async (req, res) => {
         )
       ),
       Notification.Call.addCall(call),
-    ])
+    ]);
     console.log(res.locals.data.profileId);
     const events = await Calander.getAllEvents(res.locals.data.profileId);
     return res.send({

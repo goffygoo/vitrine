@@ -1,22 +1,25 @@
+import Call from "../../model/Call.js";
 import Event from "../../model/Event.js";
 
 const getEventsForRange = async (userId, rangeStart, rangeEnd) => {
-  return Event.find({
+  const events = await Event.find({
     userId,
     startTime: {
       $gte: rangeStart,
       $lte: rangeEnd,
     },
   });
+  const eventsId = events.map((e) => e.parentId);
+  return Call.find({ _id: { $in: eventsId } });
 };
 
-const getEventsForRangeLimit = async (userId, rangeStart, limit) => {
+const getEventsForRangeLimit = async (userId, rangeStart, limit = 10) => {
   return Event.find({
     userId,
     startTime: {
       $gte: rangeStart,
     },
-  }).limit(10);
+  }).limit(limit);
 };
 
 const getAllEvents = async (userId) => {

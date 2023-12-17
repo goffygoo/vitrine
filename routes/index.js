@@ -25,7 +25,7 @@ router.use("/auth", auth);
 router.use("/provider", verifyAccessToken, provider);
 router.use("/consumer", consumer);
 router.use("/space", verifyAccessToken, space);
-router.use("/calendar", calendar);
+router.use("/calendar", verifyAccessToken,calendar);
 router.use("/community", community);
 router.use("/chat", chat);
 router.use("/platform", platform);

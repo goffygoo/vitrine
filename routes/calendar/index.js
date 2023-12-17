@@ -34,7 +34,6 @@ router.post("/addEvent", async (req, res) => {
 
 router.get("/allEvents", async (req, res) => {
   const { userId } = req.query;
-  console.log(userId);
   try {
     const events = await Calander.getAllEvents(userId);
     return res.send({ events });
@@ -48,15 +47,16 @@ router.get("/allEvents", async (req, res) => {
 });
 
 router.get("/getEventsForRange", async (req, res) => {
-  const { rangeStart, rangeEnd } = req.body;
-  const { userId } = res.locals.data;
-  console.log(userId);
+  const { rangeStart, rangeEnd } = req.query;
+  console.log(rangeStart, rangeEnd);
+  const { profileId } = res.locals.data;
   try {
     const events = await Calander.getEventsForRange(
-      userId,
+      profileId,
       rangeStart,
       rangeEnd
     );
+
     return res.send({ events });
   } catch (error) {
     console.log(error);
