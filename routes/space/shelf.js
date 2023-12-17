@@ -15,13 +15,14 @@ router.post("/addFolder", async (req, res) => {
 	const { spaceId, folderName } = req.body;
 
 	try {
-		await Folder.create({
+		let folder = await Folder.create({
 			spaceId,
 			folderName,
 		});
 
-		res.status(200).send({
+		return res.status(200).send({
 			success: true,
+			folder
 		});
 	} catch (err) {
 		res.status(400).send({
@@ -52,12 +53,17 @@ router.get("/getFolders", async (req, res) => {
 router.post("/renameFolder", async (req, res) => {
 	const { folderId, folderName } = req.body;
 
+	console.log('folderId', folderId);
+	console.log('folderName', folderName);
+
 	try {
-		await Folder.findByIdAndUpdate(folderId, {
+		const folder = await Folder.findByIdAndUpdate(folderId, {
 			folderName,
-		});
-		res.status(200).send({
+		}, {new: true});
+		console.log('folder', folder);
+		return res.status(200).send({
 			success: true,
+			folder
 		});
 	} catch (err) {
 		res.status(400).send({

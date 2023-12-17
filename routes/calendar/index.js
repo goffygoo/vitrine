@@ -10,15 +10,24 @@ router.get("/", (_req, res) => {
 });
 
 router.post("/addEvent", async (req, res) => {
-  const { userId, type, slotType, lockSlot, parentId, startTime, endTime } = req.query;
+  const { userId, type, slotType, lockSlot, parentId, startTime, endTime } =
+    req.query;
   try {
-    await Calander.addEventForUser(userId, type, slotType, lockSlot, parentId, startTime, endTime);
-    return res.send({success: true})
+    await Calander.addEventForUser(
+      userId,
+      type,
+      slotType,
+      lockSlot,
+      parentId,
+      startTime,
+      endTime
+    );
+    return res.send({ success: true });
   } catch (error) {
     console.log(error);
     return res.status(400).send({
       message: `Something went wrong`,
-      error
+      error,
     });
   }
 });
@@ -26,29 +35,52 @@ router.post("/addEvent", async (req, res) => {
 router.get("/allEvents", async (req, res) => {
   const { userId } = req.query;
   try {
-    const events = await Calander.getAllEvents(userId)
+    const events = await Calander.getAllEvents(userId);
     return res.send({ events });
   } catch (error) {
     console.log(error);
     return res.status(400).send({
       message: `Something went wrong`,
-      error
+      error,
     });
   }
-})
+});
 
 router.get("/getEventsForRange", async (req, res) => {
-  const { userId, rangeStart, rangeEnd } = req.body;
+  const { rangeStart, rangeEnd } = req.query;
+  console.log(rangeStart, rangeEnd);
+  const { profileId } = res.locals.data;
   try {
-    const events = await Calander.getEventsForRange(userId, rangeStart, rangeEnd)
+    const events = await Calander.getEventsForRange(
+      profileId,
+      rangeStart,
+      rangeEnd
+    );
+
     return res.send({ events });
   } catch (error) {
     console.log(error);
     return res.status(400).send({
       message: `Something went wrong`,
-      error
+      error,
     });
   }
-})
+});
+
+router.get("/getEventsForRangeLimit", async (req, res) => {
+  const { rangeStart } = req.body;
+  const { userId } = res.locals.data;
+  console.log(userId);
+  try {
+    const events = await Calander.getEventsForRangeLimit(userId, rangeStart);
+    return res.send({ events });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).send({
+      message: `Something went wrong`,
+      error,
+    });
+  }
+});
 
 export default router;

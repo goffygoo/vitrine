@@ -7,6 +7,7 @@ export default {
 	GOOGLE_TOKEN_URL: "https://oauth2.googleapis.com/token",
 	GOOGLE_USER_INFO_URL:
 		"https://www.googleapis.com/oauth2/v3/userinfo?access_token=",
+	GOOGLE_REDIRECT_URI: "http://localhost:3000/integration/google/callback",
 	JWT_SECRET_KEY: "chillyIsBestFriendMaterial",
 	RAZORPAY_KEY_ID: "rzp_test_D68Znn6J9zSBFu",
 	RAZORPAY_KEY_SECRET: "vVKiZ2qJe9oS1prADU2Brjjq",

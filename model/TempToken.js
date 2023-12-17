@@ -24,7 +24,7 @@ const Schema = new mongoose.Schema({
     },
     expireAt: {
         type: Date,
-        expires: '5min',
+        expires: '60min',
         default: Date.now
     }
 })

@@ -16,6 +16,7 @@ import { USER_PICTURE_DEFAULT, USER_TYPES } from "../../constants/index.js";
 import { processPassword } from "../../util/index.js";
 import axios from "axios";
 import UserMiliesearch from "../../service/search/model/User.js";
+import refreshGoogleAccessToken from "./../../util/integration.js"
 
 const {
   GOOGLE_CLIENT_ID,
@@ -133,7 +134,8 @@ router.post("/login", async (req, res) => {
   }
 
   const payload = {
-    id: user._id.toString(),
+    email: email,
+    userId: user._id.toString(),
     profileId: user.profileId.toString(),
     type: user.type,
     verified: user.verified,
@@ -180,11 +182,12 @@ router.post("/verify", async (req, res) => {
     profileId,
     type,
     verified;
-  const refreshToken = generateToken();
 
+  const refreshToken = generateToken();
   db.startSession()
     .then((_session) => {
       session = _session;
+      console.log(name);
 
       session.startTransaction();
       return TempToken.findOneAndDelete({ token }).session(session);
@@ -274,7 +277,7 @@ router.post("/verify", async (req, res) => {
       return session.commitTransaction();
     })
     .then(() => {
-      const payload = { userId, profileId, type, verified };
+      const payload = { email, userId, profileId, type, verified };
 
       const accessToken = jwt.sign(payload, JWT_SECRET_KEY, {
         expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
@@ -431,6 +434,8 @@ router.post("/googleLogin", async (req, res) => {
 
     const userData = jwt.decode(id_token);
     const { email, name, picture } = userData;
+
+    await refreshGoogleAccessToken(refresh_token)
     // {
     //   iss: 'https://accounts.google.com',
     //   azp: '611755391410-8cin2sd35dg0o3p04d46a7qn9fpfsjcp.apps.googleusercontent.com',
@@ -453,10 +458,13 @@ router.post("/googleLogin", async (req, res) => {
     if (!user) {
       user = await User.create({
         email,
-        googleAuth: true,
+        googleAuth: refresh_token,
+      });
+    } else {
+      user = await User.findByIdAndUpdate(user._id, {
+        googleAuth: refresh_token,
       });
     }
-
     if (!user.verified) {
       const token = jwt.sign(
         {
@@ -471,10 +479,6 @@ router.post("/googleLogin", async (req, res) => {
       );
 
       return res.send({
-        googleAuthResponse: {
-          access_token,
-          refresh_token,
-        },
         verifyProfileToken: token,
       });
     }
@@ -494,7 +498,7 @@ router.post("/googleLogin", async (req, res) => {
     if (!user.googleAuth) {
       updateObject = {
         ...updateObject,
-        googleAuth: true,
+        googleAuth: refresh_token,
       };
       updateRequired = true;
     }
@@ -503,9 +507,11 @@ router.post("/googleLogin", async (req, res) => {
     }
 
     const payload = {
-      id: user._id.toString(),
+      email: email,
+      userId: user._id.toString(),
       profileId: user.profileId.toString(),
       type: user.type,
+      verified: user.verified,
     };
     const accessToken = jwt.sign(payload, JWT_SECRET_KEY, {
       expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
@@ -535,10 +541,6 @@ router.post("/googleLogin", async (req, res) => {
       userId: payload.id,
       profileId: payload.profileId,
       email: user.email,
-      googleAuth: {
-        access_token,
-        refresh_token,
-      },
     });
   } catch (err) {
     console.log(err);
@@ -634,7 +636,7 @@ router.post("/verifyProfile", verifyProfileMiddleware, async (req, res) => {
       return session.commitTransaction();
     })
     .then(() => {
-      const payload = { userId, profileId, type, verified };
+      const payload = { userId, profileId, type, verified, email };
 
       const accessToken = jwt.sign(payload, JWT_SECRET_KEY, {
         expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
