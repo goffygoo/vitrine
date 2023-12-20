@@ -549,7 +549,7 @@ router.post("/googleLogin", async (req, res) => {
       accessToken,
       refreshToken,
       type: user.type,
-      userId: payload.id,
+      userId: payload.userId,
       profileId: payload.profileId,
       email: user.email,
     });
