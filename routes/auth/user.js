@@ -20,7 +20,9 @@ import refreshGoogleAccessToken from "./../../util/integration.js"
 
 const {
   GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_ID_ANDROID,
   GOOGLE_CLIENT_SECRET,
+  GOOGLE_CLIENT_SECRET_ANDROID,
   GOOGLE_TOKEN_URL,
   JWT_SECRET_KEY,
 } = config;
@@ -410,14 +412,14 @@ router.post("/resetPassword", async (req, res) => {
 });
 
 router.post("/googleLogin", async (req, res) => {
-  const { code } = req.body;
+  const { code, device = 'web' } = req.body;
 
   try {
     const response = await axios.post(GOOGLE_TOKEN_URL, {
       code,
-      client_id: GOOGLE_CLIENT_ID,
-      client_secret: GOOGLE_CLIENT_SECRET,
-      redirect_uri: "http://localhost:3000/auth",
+      client_id: device === 'android' ? GOOGLE_CLIENT_ID_ANDROID : GOOGLE_CLIENT_ID,
+      client_secret: device === 'android' ? GOOGLE_CLIENT_SECRET_ANDROID : GOOGLE_CLIENT_SECRET,
+      ...(device === 'web' && { redirect_uri: "http://localhost:3000/auth" }),
       grant_type: "authorization_code",
     });
 
@@ -435,7 +437,7 @@ router.post("/googleLogin", async (req, res) => {
     const userData = jwt.decode(id_token);
     const { email, name, picture } = userData;
 
-    await refreshGoogleAccessToken(refresh_token)
+    if (device === 'web') await refreshGoogleAccessToken(refresh_token, true)
     // {
     //   iss: 'https://accounts.google.com',
     //   azp: '611755391410-8cin2sd35dg0o3p04d46a7qn9fpfsjcp.apps.googleusercontent.com',
@@ -466,6 +468,15 @@ router.post("/googleLogin", async (req, res) => {
       });
     }
     if (!user.verified) {
+      if (device === 'android') {
+        const response = await verifyProfileHandler({
+          type: USER_TYPES.CONSUMER,
+          name,
+          userId: user._id,
+          profilePicture: picture
+        })
+        return res.send(response);
+      }
       const token = jwt.sign(
         {
           name,
@@ -561,119 +572,129 @@ const verifyProfileMiddleware = (req, res, next) => {
   });
 };
 
-router.post("/verifyProfile", verifyProfileMiddleware, async (req, res) => {
-  const { type } = req.body;
-  const {
-    userId,
-    name = "Redschool",
-    profilePicture = USER_PICTURE_DEFAULT,
-  } = res.locals.data;
-
+const verifyProfileHandler = async ({
+  type,
+  name = "New User",
+  userId,
+  profilePicture = USER_PICTURE_DEFAULT,
+}) => {
   let session = null,
     profileId,
     verified,
     email;
   const refreshToken = generateToken();
 
-  db.startSession()
-    .then((_session) => {
-      session = _session;
-      session.startTransaction();
+  try {
+    session = await db.startSession();
+    session.startTransaction();
 
-      return User.findById(userId).session(session);
-    })
-    .then((userData) => {
-      if (!userData) throw Error("Invalid Request");
-      if (userData.verified) throw Error("Account already exists");
+    const userData = await User.findById(userId).session(session);
+    if (!userData) throw Error("Invalid Request");
+    if (userData.verified) throw Error("Account already exists");
+    email = userId.email;
 
-      email = userId.email;
+    let createProfileResponse;
+    if (type === USER_TYPES.PROVIDER) {
+      createProfileResponse = await Provider.create(
+        [
+          {
+            userId,
+            name,
+            profilePicture,
+          },
+        ],
+        { session }
+      );
+    } else if (type === USER_TYPES.CONSUMER) {
+      createProfileResponse = await Consumer.create(
+        [
+          {
+            userId,
+            name,
+            profilePicture,
+          },
+        ],
+        { session }
+      );
+    } else {
+      throw Error("Invalid Request");
+    }
 
-      if (type === USER_TYPES.PROVIDER) {
-        return Provider.create(
-          [
-            {
-              userId,
-              name,
-              profilePicture,
-            },
-          ],
-          { session }
-        );
-      } else if (type === USER_TYPES.CONSUMER) {
-        return Consumer.create(
-          [
-            {
-              userId,
-              name,
-              profilePicture,
-            },
-          ],
-          { session }
-        );
-      } else {
-        throw Error("Invalid Request");
-      }
-    })
-    .then(([profile]) => {
-      verified = true;
-      profileId = profile._id.toString();
-      return User.findByIdAndUpdate(userId, {
-        type,
-        profileId,
-        verified,
-        refreshToken,
-        tokenEAT: Date.now() + REFRESH_TOKEN_EXPIRE_TIME,
-      }).session(session);
-    })
-    .then(() => {
-      return UserMiliesearch.createOrReplaceOne({
-        id: profileId,
-        name,
-        type,
-      });
-    })
-    .then(() => {
-      return session.commitTransaction();
-    })
-    .then(() => {
-      const payload = { userId, profileId, type, verified, email };
+    const profile = createProfileResponse[0];
+    verified = true;
+    profileId = profile._id.toString();
 
-      const accessToken = jwt.sign(payload, JWT_SECRET_KEY, {
-        expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
-      });
-      const dataPayload = {
-        userId,
-        profileId,
-        name,
-        type,
-        profilePicture,
-      };
-      const dataToken = jwt.sign(dataPayload, JWT_SECRET_KEY, {
-        expiresIn: REFRESH_TOKEN_EXPIRE_TIME,
-      });
+    await User.findByIdAndUpdate(userId, {
+      type,
+      profileId,
+      verified,
+      refreshToken,
+      tokenEAT: Date.now() + REFRESH_TOKEN_EXPIRE_TIME,
+    }).session(session);
 
-      return res.status(201).send({
-        dataToken,
-        accessToken,
-        refreshToken,
-        userId,
-        profileId,
-        type,
-        email,
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(400).send({
-        success: false,
-        message: `Something went wrong`,
-        err,
-      });
-      return session.abortTransaction();
-    })
-    .finally(() => {
-      return session.endSession();
+    await UserMiliesearch.createOrReplaceOne({
+      id: profileId,
+      name,
+      type,
     });
-});
 
+    await session.commitTransaction();
+
+    const payload = { userId, profileId, type, verified, email };
+    const accessToken = jwt.sign(payload, JWT_SECRET_KEY, {
+      expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
+    });
+    const dataPayload = {
+      userId,
+      profileId,
+      name,
+      type,
+      profilePicture,
+    };
+    const dataToken = jwt.sign(dataPayload, JWT_SECRET_KEY, {
+      expiresIn: REFRESH_TOKEN_EXPIRE_TIME,
+    });
+
+    return {
+      dataToken,
+      accessToken,
+      refreshToken,
+      userId,
+      profileId,
+      type,
+      email,
+    };
+  } catch (err) {
+    await session.abortTransaction();
+    throw err;
+  } finally {
+    await session.endSession();
+  }
+}
+
+router.post("/verifyProfile", verifyProfileMiddleware, async (req, res) => {
+  const { type } = req.body;
+  const {
+    userId,
+    name = "New User",
+    profilePicture = USER_PICTURE_DEFAULT,
+  } = res.locals.data;
+
+  try {
+    const response = await verifyProfileHandler({
+      type,
+      name,
+      userId,
+      profilePicture
+    })
+    return res.send(response);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send({
+      success: false,
+      message: `Something went wrong`,
+      err,
+    });
+  }
+})
 export default router;
