@@ -90,7 +90,7 @@ router.post("/signup", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, device = 'web' } = req.body;
 
   const user = await User.findOne({ email });
 
@@ -102,6 +102,15 @@ router.post("/login", async (req, res) => {
   }
 
   if (!user.verified) {
+    if (device === 'android') {
+      const response = await verifyProfileHandler({
+        type: USER_TYPES.CONSUMER,
+        name,
+        userId: user._id,
+        profilePicture: picture
+      })
+      return res.send(response);
+    }
     const token = jwt.sign(
       {
         userId: user._id,
