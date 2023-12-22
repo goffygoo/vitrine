@@ -1,6 +1,0 @@
-$env:B_WATCHER_URL='https://localhost:9200'
-$env:B_WATCHER_USERNAME='elastic'
-$env:B_WATCHER_PASSWORD='***'
-$env:B_WATCHER_CA='***'
-$env:B_WATCHER_CLIENT_ID='PROJECT_X'
-$env:GOOGLE_APPLICATION_CREDENTIALS='./constants/project-x-c4c7b-3b7f53e7c85d.json'
