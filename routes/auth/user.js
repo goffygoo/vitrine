@@ -17,6 +17,7 @@ import { processPassword } from "../../util/index.js";
 import axios from "axios";
 import UserMiliesearch from "../../service/search/model/User.js";
 import refreshGoogleAccessToken from "./../../util/integration.js"
+import Cache from "../../service/cache/index.js";
 
 const {
   GOOGLE_CLIENT_ID,
@@ -27,7 +28,7 @@ const {
   JWT_SECRET_KEY,
 } = config;
 
-const REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 28;
+const REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 90;
 const ACCESS_TOKEN_EXPIRE_TIME = "30m";
 
 const generateToken = () => {
@@ -90,7 +91,7 @@ router.post("/signup", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const { email, password, device = 'web' } = req.body;
+  const { email, password, device = 'web', fcmToken } = req.body;
 
   const user = await User.findOne({ email });
 
@@ -160,8 +161,8 @@ router.post("/login", async (req, res) => {
   const profile = await Model.findById(user.profileId);
   const { name, profilePicture } = profile;
   const dataPayload = {
-    userId: user._id,
-    profileId: user.profileId,
+    userId: payload.userId,
+    profileId: payload.profileId,
     name,
     type: user.type,
     profilePicture,
@@ -170,6 +171,8 @@ router.post("/login", async (req, res) => {
   const dataToken = jwt.sign(dataPayload, JWT_SECRET_KEY, {
     expiresIn: REFRESH_TOKEN_EXPIRE_TIME,
   });
+
+  if (device === 'android') Cache.FCMToken.addToken(payload.userId, fcmToken);
 
   return res.status(201).send({
     dataToken,
@@ -421,7 +424,7 @@ router.post("/resetPassword", async (req, res) => {
 });
 
 router.post("/googleLogin", async (req, res) => {
-  const { code, device = 'web' } = req.body;
+  const { code, device = 'web', fcmToken } = req.body;
 
   try {
     const response = await axios.post(GOOGLE_TOKEN_URL, {
@@ -542,8 +545,8 @@ router.post("/googleLogin", async (req, res) => {
     const { name: profileName, profilePicture, spaces } = profile;
 
     const dataPayload = {
-      userId: user._id,
-      profileId: user.profileId,
+      userId: payload.userId,
+      profileId: payload.profileId,
       name: profileName,
       type: user.type,
       profilePicture,
@@ -552,6 +555,8 @@ router.post("/googleLogin", async (req, res) => {
     const dataToken = jwt.sign(dataPayload, JWT_SECRET_KEY, {
       expiresIn: REFRESH_TOKEN_EXPIRE_TIME,
     });
+
+    if (device === 'android') Cache.FCMToken.addToken(payload.userId, fcmToken);
 
     return res.status(200).send({
       dataToken,
