@@ -1,9 +1,13 @@
 import { Server } from "socket.io";
 import Consumer from "../model/Consumer.js";
 import Provider from "../model/Provider.js";
-import { USER_TYPES, SOCKET_ROOM_TAG } from "../constants/index.js";
+import { USER_TYPES } from "../constants/index.js";
 import Chat from "../service/chat/index.js";
 import Cache from "../service/cache/index.js";
+import jwt from "jsonwebtoken";
+import config from "../constants/config.js";
+
+const { JWT_SECRET_KEY } = config;
 
 let Singleton;
 
@@ -15,42 +19,27 @@ export const initConnection = (server) => {
 		},
 	});
 
-	Singleton.use((socket, next) => {
-		next();
-		// const token = socket.handshake.auth.token;
-		// if (token === SOCKET_TOKEN) {
-		//   next();
-		// } else {
-		//   next(new Error("Invalid Connection"))
-		// }
-	});
-
 	Singleton.use(async (socket, next) => {
-		const profileId = socket.handshake.auth.profileId;
-		const type = socket.handshake.auth.type;
+		const accessToken = socket.handshake.auth.accessToken;
 		try {
+			const data = jwt.verify(accessToken, JWT_SECRET_KEY);
+			const { type, profileId } = data;
+
 			const Model = {
 				[USER_TYPES.CONSUMER]: Consumer,
 				[USER_TYPES.PROVIDER]: Provider,
 			}[type];
 			const profile = await Model.findById(profileId).select({
-				_id: 0,
-				userId: 1,
-				spaces: 1,
+				_id: 1,
 			});
 
-			if (!profile) throw Error('User not found')
+			if (!profile) throw Error();
+			Cache.Socket.addId(profileId, socket.id);
+			socket.profileId = profileId;
 
-			Cache.Socket.addId(profile.userId, socket.id);
-			socket.userId = profile.userId;
-			profile.spaces?.forEach((spaceId) => {
-				const roomId = SOCKET_ROOM_TAG.SPACE + spaceId.toString();
-				socket.join(roomId);
-			});
 			return next();
-		} catch (err) {
-			console.log("error in sockets: ", err);
-			return next(new Error("Invalid Connection"));
+		} catch (_e) {
+			return next(new Error());
 		}
 	});
 
@@ -61,7 +50,8 @@ export const initConnection = (server) => {
 		});
 
 		socket.on("disconnect", () => {
-			Cache.Socket.deleteId(socket.userId, socket.id);
+			Cache.Socket.deleteId(socket.profileId, socket.id);
+			console.log("disconnected")
 		});
 
 		Chat.Events.registerEvents(socket);

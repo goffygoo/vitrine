@@ -14,10 +14,6 @@ export const NOTIFICATION_EVENT_TYPES = {
   EXAM: "EXAM",
 };
 
-export const SOCKET_ROOM_TAG = {
-  SPACE: "space",
-};
-
 export const SOCKET_EVENTS = {
   MESSAGE_SEND: "chat-message-send",
   MESSAGE_RECEIVED: "chat-message-received",
