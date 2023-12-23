@@ -46,22 +46,22 @@ app.get('/', async (_req, res) => {
 	// 	})
 	// })
 
-	await admin.messaging().sendEachForMulticast({
-		tokens: [token1, token2],
-		data: {
-			title: "heading",
-			body: "description goes here",
-		},
-		notification: {
-			title: "heading",
-			body: "description goes here",
-		},
-	}).then(response => {
-		console.log('Successfully sent message:', response);
-		console.log('error:', response.responses[0].error);
-	}).catch(error => {
-		console.log('Error sending message:', error);
-	});
+	// await admin.messaging().sendEachForMulticast({
+	// 	tokens: [token1, token2],
+	// 	data: {
+	// 		title: "heading",
+	// 		body: "description goes here",
+	// 	},
+	// 	notification: {
+	// 		title: "heading",
+	// 		body: "description goes here",
+	// 	},
+	// }).then(response => {
+	// 	console.log('Successfully sent message:', response);
+	// 	console.log('error:', response.responses[0].error);
+	// }).catch(error => {
+	// 	console.log('Error sending message:', error);
+	// });
 
 	return res.send({ "ok": "ok" })
 })
