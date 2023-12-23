@@ -10,16 +10,49 @@ const getEventsForRange = async (userId, rangeStart, rangeEnd) => {
     },
   });
   const eventsId = events.map((e) => e.parentId);
-  return Call.find({ _id: { $in: eventsId } });
+  const calls = await Call.find({ _id: { $in: eventsId } });
+  calls.sort((a, b) => {
+    return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+  });
+  return calls;
 };
 
-const getEventsForRangeLimit = async (userId, rangeStart, limit = 10) => {
-  return Event.find({
+const getEventsForRangeInSpace = async (
+  userId,
+  rangeStart,
+  rangeEnd,
+  spaceId
+) => {
+  const events = await Event.find({
+    userId,
+    startTime: {
+      $gte: rangeStart,
+      $lte: rangeEnd,
+    },
+  });
+  const eventsId = events.map((e) => e.parentId);
+  const calls = await Call.find({ _id: { $in: eventsId }, spaceId });
+  calls.sort((a, b) => {
+    return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+  });
+  return calls;
+};
+
+const getEventsForRangeLimit = async (userId, rangeStart, limit = 5) => {
+  const events = await Event.find({
     userId,
     startTime: {
       $gte: rangeStart,
     },
-  }).limit(limit);
+  })
+    .limit(limit)
+    .sort({ startTime: 1 });
+  const eventsId = events.map((e) => e.parentId);
+  const calls = await Call.find({ _id: { $in: eventsId } });
+  calls.sort(
+    (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+  );
+  return calls;
 };
 
 const getAllEvents = async (userId) => {
@@ -68,4 +101,5 @@ export default {
   getEventsForRange,
   addEventForUser,
   getEventsForRangeLimit,
+  getEventsForRangeInSpace,
 };
