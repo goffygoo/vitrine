@@ -17,7 +17,6 @@ router.get('/get', async (req, res) => {
 		res.send({ pageData: page });
 	} catch (_e) {
 		res.sendStatus(400);
-		console.log(err);
 	}
 });
 
