@@ -15,7 +15,6 @@ import config from "../../constants/config.js";
 import { USER_PICTURE_DEFAULT, USER_TYPES } from "../../constants/index.js";
 import { processPassword } from "../../util/index.js";
 import axios from "axios";
-import UserMiliesearch from "../../service/search/model/User.js";
 import refreshGoogleAccessToken from "./../../util/integration.js"
 import Cache from "../../service/cache/index.js";
 
@@ -263,13 +262,6 @@ router.post("/verify", async (req, res) => {
       userId = id;
       profileId = profile._id.toString();
       return User.findByIdAndUpdate(id, { profileId }).session(session);
-    })
-    .then(() => {
-      return UserMiliesearch.createOrReplaceOne({
-        id: profileId,
-        name,
-        type,
-      });
     })
     .then(() => {
       return session.commitTransaction();
@@ -601,12 +593,6 @@ const verifyProfileHandler = async ({
       refreshToken,
       tokenEAT: Date.now() + REFRESH_TOKEN_EXPIRE_TIME,
     }).session(session);
-
-    await UserMiliesearch.createOrReplaceOne({
-      id: profileId,
-      name,
-      type,
-    });
 
     await session.commitTransaction();
 

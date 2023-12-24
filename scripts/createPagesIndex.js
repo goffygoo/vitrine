@@ -62,6 +62,7 @@ await httpRequest(
     displayedAttributes: [
       "id",
       "profileImg",
+      "banner",
       "heading",
       "subHeading",
     ],
