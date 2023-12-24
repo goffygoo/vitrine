@@ -1,4 +1,4 @@
-import { SOCKET_EVENTS, SOCKET_ROOM_TAG } from "../../constants/index.js";
+import { SOCKET_EVENTS } from "../../constants/index.js";
 import Message from "../../model/Message.js";
 import { emitToRoom } from "../../util/socketIO.js";
 import config from "../../constants/config.js";
@@ -30,7 +30,7 @@ const sendMessage = (socket) => {
 				// TODO: error handle
 				return;
 			}
-			const roomId = SOCKET_ROOM_TAG.SPACE + spaceId;
+			const roomId = spaceId;
 			await Message.create({
 				spaceId,
 				message,

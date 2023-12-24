@@ -10,7 +10,7 @@ import platform from "./platform/index.js";
 import admin from "./admin/index.js";
 import monet from "./monet/index.js";
 import test from "./test/index.js";
-import integration from './integrations/index.js'
+import integration from './integration/index.js'
 import { verifyAccessToken } from "./middleware.js";
 
 const router = express.Router();

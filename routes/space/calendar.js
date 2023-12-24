@@ -89,11 +89,6 @@ const getGoogleMeetLink = async (req, res, next) => {
 };
 
 router.post("/addCall", getGoogleMeetLink, async (req, res) => {
-  Watcher.log({
-    key1: "addCall",
-    key2: "created",
-    data: JSON.stringify({ women: "addcall" }),
-  });
   const { title, spaceId, description, startTime, endTime } = req.body;
   const { consumer: participants, provider } = await SpaceModel.findById(
     spaceId
