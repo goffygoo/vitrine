@@ -1,15 +1,15 @@
-import express from "express";
-import Page from "../../service/search/model/Page.js";
+import express from 'express';
+import Page from '../../service/search/model/Page.js';
 
 const router = express.Router();
 
-router.get("/", (_req, res) => {
+router.get('/', (_req, res) => {
 	return res.send({
-		health: "OK",
+		health: 'OK',
 	});
 });
 
-router.get("/get", async (req, res) => {
+router.get('/get', async (req, res) => {
 	const { id } = req.query;
 
 	try {
@@ -54,7 +54,6 @@ router.post("/replace", async (req, res) => {
 
 router.post("/update", async (req, res) => {
 	const { data } = req.body;
-
 	try {
 		const task = await Page.createOrUpdateOne(data);
 		return res.send(task);

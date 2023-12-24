@@ -1,0 +1,6 @@
+export B_WATCHER_URL='https://localhost:9200'
+export B_WATCHER_USERNAME='elastic'
+export B_WATCHER_PASSWORD='***'
+export B_WATCHER_CA='***'
+export B_WATCHER_CLIENT_ID='PROJECT_X'
+export GOOGLE_APPLICATION_CREDENTIALS='./constants/project-x-c4c7b-3b7f53e7c85d.json'
