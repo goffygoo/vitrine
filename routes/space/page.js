@@ -1,20 +1,21 @@
-import express from "express";
-import Page from "../../service/search/model/Page.js";
+import express from 'express';
+import Page from '../../service/search/model/Page.js';
 
 const router = express.Router();
 
-router.get("/", (_req, res) => {
+router.get('/', (_req, res) => {
 	return res.send({
-		health: "OK",
+		health: 'OK',
 	});
 });
 
-router.get("/get", async (req, res) => {
+router.get('/get', async (req, res) => {
 	const { id } = req.query;
 
 	try {
 		const page = await Page.findById(id);
-		res.send({ pageData: page });
+		const space = await SpaceModel.findById(spaceId);
+		res.send({ pageData: page, plans: space.plan });
 	} catch (err) {
 		res.status(400).send({
 			success: false,
@@ -25,7 +26,7 @@ router.get("/get", async (req, res) => {
 	}
 });
 
-router.post("/create", async (req, res) => {
+router.post('/create', async (req, res) => {
 	const { data, spaceId } = req.body;
 	let pageNotFound = false;
 
@@ -38,7 +39,7 @@ router.post("/create", async (req, res) => {
 					message: `Page already exist`,
 				});
 		} catch (error) {
-			if (error?.error?.code !== "document_not_found") throw error;
+			if (error?.error?.code !== 'document_not_found') throw error;
 			pageNotFound = true;
 		}
 		const task = await Page.createOrReplaceOne({ ...data, id: spaceId });
@@ -53,7 +54,7 @@ router.post("/create", async (req, res) => {
 	}
 });
 
-router.post("/replace", async (req, res) => {
+router.post('/replace', async (req, res) => {
 	const { data, spaceId } = req.body;
 
 	try {
@@ -69,7 +70,7 @@ router.post("/replace", async (req, res) => {
 	}
 });
 
-router.post("/update", async (req, res) => {
+router.post('/update', async (req, res) => {
 	const { data, spaceId } = req.body;
 	// TODO: filter sensitive data (prices)
 
