@@ -15,74 +15,50 @@ router.get('/get', async (req, res) => {
 	try {
 		const page = await Page.findById(id);
 		res.send({ pageData: page });
-	} catch (err) {
-		res.status(400).send({
-			success: false,
-			message: `Something went wrong`,
-			err,
-		});
-		console.log('error in fetching page:', err);
+	} catch (_e) {
+		res.sendStatus(400);
+		console.log(err);
 	}
 });
 
-router.post('/create', async (req, res) => {
-	const { data, spaceId } = req.body;
-	let pageNotFound = false;
-
+router.post("/create", async (req, res) => {
+	const { data } = req.body;
 	try {
+		const spaceId = data.id;
 		try {
 			const page = await Page.findById(spaceId);
 			if (page)
-				return res.status(400).send({
-					success: false,
-					message: `Page already exist`,
-				});
+				return res.sendStatus(400);
 		} catch (error) {
-			if (error?.error?.code !== 'document_not_found') throw error;
-			pageNotFound = true;
+			if (error?.error?.code !== "document_not_found") throw error;
 		}
-		const task = await Page.createOrReplaceOne({ ...data, id: spaceId });
+		const task = await Page.createOrReplaceOne(data);
 		return res.send(task);
-	} catch (error) {
-		res.status(400).send({
-			success: false,
-			message: `Something went wrong`,
-			error,
-		});
-		console.log(error);
+	} catch (_e) {
+		return res.sendStatus(400);
 	}
 });
 
-router.post('/replace', async (req, res) => {
-	const { data, spaceId } = req.body;
-
+/**
+ * @deprecated
+ */
+router.post("/replace", async (req, res) => {
+	const { data } = req.body;
 	try {
-		const task = await Page.createOrReplaceOne({ ...data, id: spaceId });
+		const task = await Page.createOrReplaceOne(data);
 		return res.send(task);
-	} catch (error) {
-		res.status(400).send({
-			success: false,
-			message: `Something went wrong`,
-			error,
-		});
-		console.log(error);
+	} catch (_e) {
+		return res.sendStatus(400);
 	}
 });
 
-router.post('/update', async (req, res) => {
-	const { data, spaceId } = req.body;
-	// TODO: filter sensitive data (prices)
-
+router.post("/update", async (req, res) => {
+	const { data } = req.body;
 	try {
-		const task = await Page.createOrUpdateOne({ ...data, id: spaceId });
+		const task = await Page.createOrUpdateOne(data);
 		return res.send(task);
-	} catch (error) {
-		res.status(400).send({
-			success: false,
-			message: `Something went wrong`,
-			error,
-		});
-		console.log(error);
+	} catch (_e) {
+		return res.sendStatus(400);
 	}
 });
 
