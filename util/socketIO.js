@@ -23,19 +23,11 @@ export const initConnection = (server) => {
 		const accessToken = socket.handshake.auth.accessToken;
 		try {
 			const data = jwt.verify(accessToken, JWT_SECRET_KEY);
-			const { type, profileId } = data;
+			const { profileId, type } = data;
 
-			const Model = {
-				[USER_TYPES.CONSUMER]: Consumer,
-				[USER_TYPES.PROVIDER]: Provider,
-			}[type];
-			const profile = await Model.findById(profileId).select({
-				_id: 1,
-			});
-
-			if (!profile) throw Error();
 			Cache.Socket.addId(profileId, socket.id);
-			socket.profileId = profileId;
+			socket.data.profileId = profileId;
+			socket.data.type = type;
 
 			return next();
 		} catch (_e) {
@@ -50,7 +42,7 @@ export const initConnection = (server) => {
 		});
 
 		socket.on("disconnect", () => {
-			Cache.Socket.deleteId(socket.profileId, socket.id);
+			Cache.Socket.deleteId(socket.data.profileId, socket.id);
 			console.log("disconnected")
 		});
 

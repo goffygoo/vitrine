@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { USER_TYPES } from "../constants/index.js";
 
 const { ObjectId } = mongoose.Schema.Types;
 
@@ -11,13 +12,13 @@ const Schema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  senderProfilePicture: {
-    type: String,
-    default: "/tempuser.jpg",
-  },
-  senderName: {
-    type: String,
+  sender: {
+    type: ObjectId,
     required: true,
+  },
+  senderType: {
+    type: String,
+    enum: [USER_TYPES.PROVIDER, USER_TYPES.CONSUMER, USER_TYPES.ADMIN],
   },
   expireAt: {
     type: Date,
