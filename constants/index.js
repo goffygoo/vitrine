@@ -19,7 +19,10 @@ export const SOCKET_EVENTS = {
   MESSAGE_RECEIVED: "chat-message-received",
   DIRECT_MESSAGE_SEND: "chat-dm-send",
   DIRECT_MESSAGE_RECEIVED: "chat-dm-received",
-  JOIN_CHAT: "join-chat",
+  JOINED_CHAT: "joined-chat",
+  LEFT_CHAT: "left-chat",
+  GET_ONLINE_MEMBERS: "get-online-members",
+  RECIEVED_ONLINE_MEMBER: "recieved-online-members",
 };
 
 export const USER_PICTURE_DEFAULT = "/tempuser.jpg";

@@ -6,7 +6,7 @@ const notifyImmediately = (event, data) => {
 };
 
 const notifyUserImmediately = (event, data, profileId) => {
-	emitToUser(userId, event, data);
+	emitToUser(profileId, event, data);
 };
 
 const createEventLocally = (startTime, event, data) => {
@@ -24,7 +24,7 @@ const createEvent = (startTime, type, parentId) => {
 	});
 };
 
-export {
+export default {
 	notifyImmediately,
 	createEventLocally,
 	createEvent,

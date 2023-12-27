@@ -1,5 +1,7 @@
 import { NOTIFICATION_EVENT_TYPES } from "../../constants/index.js";
-import { createEvent, createEventLocally, notifyImmediately } from "./actions.js";
+import Actions from "./actions.js";
+
+const { createEvent, createEventLocally, notifyImmediately } = Actions;
 
 const createLocally = (startTime) => {
   const event = "eventNotification";
