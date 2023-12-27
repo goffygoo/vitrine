@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { ORDER_PLAN_TYPES } from "../constants/index.js";
 
 const { ObjectId } = mongoose.Schema.Types;
 

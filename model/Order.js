@@ -1,37 +1,29 @@
 import mongoose from "mongoose";
-import { ORDER_PLAN_TYPES } from "../constants/index.js";
+import { ORDER_STATUS } from "../constants/index.js";
 
 const { ObjectId } = mongoose.Schema.Types;
 
 const Schema = new mongoose.Schema(
 	{
-		consumer: {
+		profileId: {
 			type: ObjectId,
 			required: true,
 		},
-		itemType: {
+		spaceId: {
 			type: String,
-			enum: ["SPACE"],
-			required: true,
-		},
-		description: {
-			type: String,
-		},
-		item: {
-			type: ObjectId,
-			required: true,
-		},
-		planDetails: {
-			type: String,
-			enum: [
-				ORDER_PLAN_TYPES.MONTHLY,
-				ORDER_PLAN_TYPES.BUY,
-				ORDER_PLAN_TYPES.YEARLY,
-			],
-			required: true,
 		},
 		amount: {
-			type: Number,
+			type: ObjectId,
+			required: true,
+		},
+		status: {
+			type: String,
+			enum: [
+				ORDER_STATUS.PENDING,
+				ORDER_STATUS.FAILED,
+				ORDER_STATUS.SUCCESS,
+				ORDER_STATUS.REFUNDED,
+			],
 			required: true,
 		},
 		paymentDetails: {

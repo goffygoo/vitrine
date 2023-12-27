@@ -1,7 +1,7 @@
 import express from "express";
 import Message from "../../model/Message.js";
 import SpaceModel from "../../model/SpaceModel.js";
-import { ORDER_PLAN_TYPES } from "../../constants/index.js";
+const ORDER_PLAN_TYPES = {};
 const router = express.Router();
 
 router.get("/", (_req, res) => {
