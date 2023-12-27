@@ -32,10 +32,11 @@ export const MODEL_INDEX = {
 
 export const PAGE_TEMPLATES = ["SKY"];
 
-export const ORDER_PLAN_TYPES = {
-  BUY: "BUY",
-  MONTHLY: "MONTHLY",
-  YEARLY: "YEARLY",
+export const ORDER_STATUS = {
+  SUCCESS: "SUCCESS",
+  PENDING: "PENDING",
+  FAILED: "FAILED",
+  REFUNDED: "REFUNDED",
 };
 
 export const FORM_TYPES = {

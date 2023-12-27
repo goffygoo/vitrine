@@ -1,4 +1,4 @@
-import { MODEL_INDEX, PAGE_TEMPLATES } from "../../../constants/index.js";
+import { MODEL_INDEX } from "../../../constants/index.js";
 import modelEngine from "./modelEngine.js";
 
 const schema = {
@@ -26,6 +26,7 @@ const schema = {
         "highlights",
         "description",
     ],
+    additionalProperties: false,
 };
 
 const sampleData = {

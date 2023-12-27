@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { ORDER_PLAN_TYPES } from "../constants/index.js";
 
 const { ObjectId } = mongoose.Schema.Types;
 
@@ -27,15 +26,6 @@ const Schema = new mongoose.Schema(
 		},
 		billingDate: {
 			type: Date,
-		},
-		planDetails: {
-			type: String,
-			enum: [
-				ORDER_PLAN_TYPES.MONTHLY,
-				ORDER_PLAN_TYPES.BUY,
-				ORDER_PLAN_TYPES.YEARLY,
-			],
-			required: true,
 		},
 		amount: {
 			type: Number,
