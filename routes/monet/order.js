@@ -3,7 +3,7 @@ import Order from "../../model/Order.js";
 import SpaceModel from "../../model/SpaceModel.js";
 import db from "../../util/db.js";
 import Subscription from "../../model/Subscription.js";
-import { ORDER_PLAN_TYPES } from "../../constants/index.js";
+import { ORDER_STATUS } from "../../constants/index.js";
 import Consumer from "../../model/Consumer.js";
 import Payout from "../../model/Payout.js";
 import DraftOrder from "../../model/DraftOrder.js";
@@ -19,6 +19,29 @@ router.get("/", (_req, res) => {
 });
 
 router.post("/createOrder", async (req, res) => {
+	try {
+		const { userId, spaceId } = req.body;
+
+		console.log("here");
+		const order = {
+			_id:'asdasdrwr234',
+			profileId: userId,
+			spaceId,
+			amount: 21,
+			status: ORDER_STATUS.PENDING,
+		};
+
+		console.log("here 1");
+
+		const paymentOrder = await Payment.Order.createPaymentOrder(order);
+		res.send(paymentOrder);
+	} catch (_e) {
+		console.log(_e);
+		return res.sendStatus(400);
+	}
+});
+
+router.post("/createOrderD", async (req, res) => {
 	try {
 		const { userId, itemType, item, amount, planDetails } = req.body;
 

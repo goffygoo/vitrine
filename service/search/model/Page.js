@@ -1,4 +1,4 @@
-import { MODEL_INDEX, PAGE_TEMPLATES } from "../../../constants/index.js";
+import { MODEL_INDEX } from "../../../constants/index.js";
 import modelEngine from "./modelEngine.js";
 
 const schema = {
@@ -9,14 +9,6 @@ const schema = {
         profileImg: { type: "string" },
         heading: { type: "string" },
         subHeading: { type: "string" },
-        socials: {
-            type: "object",
-            properties: {
-                gaffar: { type: "string" },
-                email: { type: "string" },
-                twitter: { type: "string" },
-            },
-        },
         highlights: {
             type: "array",
             items: {
@@ -24,7 +16,6 @@ const schema = {
             },
         },
         description: { type: "string" },
-        template: { enum: PAGE_TEMPLATES },
     },
     required: [
         "id",
@@ -32,11 +23,10 @@ const schema = {
         "profileImg",
         "heading",
         "subHeading",
-        "socials",
         "highlights",
         "description",
-        "template",
     ],
+    additionalProperties: false,
 };
 
 const sampleData = {
@@ -45,11 +35,6 @@ const sampleData = {
     profileImg: "url",
     heading: "heading",
     subHeading: "sub heading",
-    socials: {
-        gaffar: "id",
-        email: "email",
-        twitter: "id" 
-    },
     highlights: [
         "hightlight1",
         "hightlight2",
