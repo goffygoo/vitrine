@@ -20,38 +20,7 @@ router.get('/get', async (req, res) => {
 	}
 });
 
-router.post("/create", async (req, res) => {
-	const { data } = req.body;
-	try {
-		const spaceId = data.id;
-		try {
-			const page = await Page.findById(spaceId);
-			if (page)
-				return res.sendStatus(400);
-		} catch (error) {
-			if (error?.error?.code !== "document_not_found") throw error;
-		}
-		const task = await Page.createOrReplaceOne(data);
-		return res.send(task);
-	} catch (_e) {
-		return res.sendStatus(400);
-	}
-});
-
-/**
- * @deprecated
- */
-router.post("/replace", async (req, res) => {
-	const { data } = req.body;
-	try {
-		const task = await Page.createOrReplaceOne(data);
-		return res.send(task);
-	} catch (_e) {
-		return res.sendStatus(400);
-	}
-});
-
-router.post("/update", async (req, res) => {
+router.post("/createOrUpdate", async (req, res) => {
 	const { data } = req.body;
 	try {
 		const task = await Page.createOrUpdateOne(data);
