@@ -129,4 +129,13 @@ router.post("/createSpace", async (req, res) => {
   }
 });
 
+router.get("/getSpace", async (req, res) => {
+  const { spaceId } = req.query;
+  console.log(spaceId);
+  const space = await SpaceModel.findById(spaceId);
+  return res.send({
+    space,
+  });
+});
+
 export default router;

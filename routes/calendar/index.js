@@ -48,7 +48,6 @@ router.get("/allEvents", async (req, res) => {
 
 router.get("/getEventsForRange", async (req, res) => {
   const { rangeStart, rangeEnd } = req.query;
-  console.log(rangeStart, rangeEnd);
   const { profileId } = res.locals.data;
   try {
     const events = await Calander.getEventsForRange(
@@ -67,12 +66,32 @@ router.get("/getEventsForRange", async (req, res) => {
   }
 });
 
-router.get("/getEventsForRangeLimit", async (req, res) => {
-  const { rangeStart } = req.body;
-  const { userId } = res.locals.data;
-  console.log(userId);
+router.get("/getUpcomingEvents", async (req, res) => {
+  const { rangeStart } = req.query;
+  const { profileId } = res.locals.data;
   try {
-    const events = await Calander.getEventsForRangeLimit(userId, rangeStart);
+    const events = await Calander.getEventsForRangeLimit(profileId, rangeStart);
+    return res.send({ events });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).send({
+      message: `Something went wrong`,
+      error,
+    });
+  }
+});
+
+router.get("/getEventsForRangeSpace", async (req, res) => {
+  const { rangeStart, rangeEnd, spaceId } = req.query;
+  const { profileId } = res.locals.data;
+  try {
+    const events = await Calander.getEventsForRangeInSpace(
+      profileId,
+      rangeStart,
+      rangeEnd,
+      spaceId
+    );
+
     return res.send({ events });
   } catch (error) {
     console.log(error);
