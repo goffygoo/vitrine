@@ -54,9 +54,9 @@ const Schema = new mongoose.Schema({
     type: [ObjectId],
     default: [],
   },
-  plan: {
-    type: Object,
-    default: {},
+  price: {
+    type: Number,
+    default: Infinity,
   },
 });
 

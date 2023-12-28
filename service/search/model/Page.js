@@ -42,7 +42,6 @@ const sampleData = {
         "hightlight4",
     ],
     description: "description goes here",
-    template: "SKY",
 };
 
 const Page = modelEngine(schema, MODEL_INDEX.PAGES);
