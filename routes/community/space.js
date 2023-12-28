@@ -76,7 +76,6 @@ router.get("/featured", async (req, res) => {
 
 router.get("/search", async (req, res) => {
     const { query } = req.query;
-
     try {
         const queryResponse = await Page.searchQuery(query);
         const pages = queryResponse.hits;
@@ -98,7 +97,6 @@ router.get("/search", async (req, res) => {
         })
         return res.send(responseData);
     } catch (_e) {
-        console.log(_e)
         return res.sendStatus(400);
     }
 })
