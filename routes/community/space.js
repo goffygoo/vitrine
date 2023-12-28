@@ -74,7 +74,7 @@ router.get("/featured", async (req, res) => {
     }
 })
 
-router.get("/searchPage", async (req, res) => {
+router.get("/search", async (req, res) => {
     const { query } = req.query;
 
     try {
