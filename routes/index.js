@@ -9,7 +9,6 @@ import chat from "./chat/index.js";
 import platform from "./platform/index.js";
 import admin from "./admin/index.js";
 import monet from "./monet/index.js";
-import test from "./test/index.js";
 import integration from './integration/index.js'
 import { verifyAccessToken } from "./middleware.js";
 
@@ -30,8 +29,7 @@ router.use("/community", community);
 router.use("/chat", chat);
 router.use("/platform", platform);
 router.use("/admin", admin);
-router.use("/monet", monet);
+router.use("/monet", verifyAccessToken, monet);
 router.use("/integration", integration);
-router.use("/test", test);
 
 export default router;

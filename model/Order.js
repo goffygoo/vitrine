@@ -10,25 +10,29 @@ const Schema = new mongoose.Schema(
 			required: true,
 		},
 		spaceId: {
-			type: String,
+			type: ObjectId,
+			required: true,
 		},
 		amount: {
-			type: ObjectId,
+			type: Number,
 			required: true,
 		},
 		status: {
 			type: String,
 			enum: [
 				ORDER_STATUS.PENDING,
-				ORDER_STATUS.FAILED,
 				ORDER_STATUS.SUCCESS,
 				ORDER_STATUS.REFUNDED,
+				ORDER_STATUS.FAILED,
 			],
-			required: true,
+			default: ORDER_STATUS.PENDING,
 		},
-		paymentDetails: {
-			type: Object,
+		pgOrderId: {
+			type: String,
 		},
+		pgPaymentId: {
+			type: String,
+		}
 	},
 	{
 		timestamps: true,

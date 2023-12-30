@@ -1,6 +1,7 @@
 export const HEADERS = {
   USER_ID: "user-id",
   AUTHORIZATION: "authorization",
+  RAZORPAY_SIGNATURE: "x-razorpay-signature",
 };
 
 export const USER_TYPES = {
@@ -40,6 +41,12 @@ export const ORDER_STATUS = {
   PENDING: "PENDING",
   FAILED: "FAILED",
   REFUNDED: "REFUNDED",
+};
+
+export const PG_PAYMENT_STATUS = {
+  CAPTURED: "captured",
+  FAILED: "failed",
+  REFUNDED: "refunded",
 };
 
 export const FORM_TYPES = {

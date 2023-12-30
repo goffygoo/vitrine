@@ -4,7 +4,6 @@ import axios from "axios";
 import Call from "../../model/Call.js";
 import Notification from "../../service/notification/index.js";
 import Calander from "../../service/calender/index.js";
-import Watcher from "@baljeetkode/watcher";
 import {
   CALENDER_EVENT_SLOT_TYPES,
   CALENDER_EVENT_TYPES,
