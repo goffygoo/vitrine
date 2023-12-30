@@ -77,7 +77,7 @@ const getOnlineMembers = async (socket) => {
       }
       if (Cache.Socket.isOnline(space.provider.toString()))
         onlineMembers[space.provider.toString()] = 1;
-      socket.emit(SOCKET_EVENTS.RECIEVED_ONLINE_MEMBER, onlineMembers);
+      socket.emit(SOCKET_EVENTS.RECIEVED_ONLINE_MEMBER, {onlineMembers, spaceId});
     } catch (err) {}
   });
 };
