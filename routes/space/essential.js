@@ -1,6 +1,8 @@
 import express from "express";
 import Message from "../../model/Message.js";
 import SpaceModel from "../../model/SpaceModel.js";
+import Consumer from "../../model/Consumer.js";
+import Provider from "../../model/Provider.js";
 const ORDER_PLAN_TYPES = {};
 const router = express.Router();
 
@@ -44,7 +46,15 @@ router.get("/getMembers", async (req, res) => {
       profilePicture: 1,
     });
     return res.send({
-      data: [...consumers, provider],
+      data: [
+        ...consumers,
+        {
+          name: provider.name,
+          profilePicture: provider.profilePicture,
+          provider: true,
+          _id: provider._id,
+        },
+      ],
     });
   } catch (err) {
     console.log(err);

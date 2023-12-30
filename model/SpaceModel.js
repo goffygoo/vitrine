@@ -1,24 +1,7 @@
 import mongoose from "mongoose";
 
 const { ObjectId } = mongoose.Schema.Types;
-
 const Schema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-    default: "",
-  },
-  displayPicture: {
-    type: String,
-    default: "tempuser.jpg",
-  },
-  coverPicture: {
-    type: String,
-    default: "tempcover.jpg",
-  },
   provider: {
     type: ObjectId,
     required: true,
