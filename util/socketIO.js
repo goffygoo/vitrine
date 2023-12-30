@@ -40,7 +40,6 @@ export const initConnection = (server) => {
     socket.on("disconnect", () => {
       Cache.Socket.deleteId(socket.data.profileId, socket.id);
       Chat.Events.fireLeaveEvents(socket.data);
-      console.log("disconnected");
     });
 
     Chat.Events.registerEvents(socket);

@@ -63,3 +63,7 @@ export const CALENDER_EVENT_SLOT_TYPES = {
   TIMED: "TIMED",
   ALL_DAY: "ALL_DAY",
 };
+
+export const PRESENTATION_TAGS = {
+  FEATURED_PAGES: 0,
+}
