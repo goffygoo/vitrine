@@ -23,26 +23,18 @@ router.post("/addEvent", async (req, res) => {
       endTime
     );
     return res.send({ success: true });
-  } catch (error) {
-    console.log(error);
-    return res.status(400).send({
-      message: `Something went wrong`,
-      error,
-    });
+  } catch (_e) {
+    return res.sendStatus(400);
   }
 });
 
-router.get("/allEvents", async (req, res) => {
-  const { userId } = req.query;
+router.get("/allEvents", async (_req, res) => {
+  const { profileId } = res.locals.data;
   try {
-    const events = await Calander.getAllEvents(userId);
+    const events = await Calander.getAllEvents(profileId);
     return res.send({ events });
-  } catch (error) {
-    console.log(error);
-    return res.status(400).send({
-      message: `Something went wrong`,
-      error,
-    });
+  } catch (_e) {
+    return res.sendStatus(400);
   }
 });
 
@@ -55,14 +47,9 @@ router.get("/getEventsForRange", async (req, res) => {
       rangeStart,
       rangeEnd
     );
-
     return res.send({ events });
-  } catch (error) {
-    console.log(error);
-    return res.status(400).send({
-      message: `Something went wrong`,
-      error,
-    });
+  } catch (_e) {
+    return res.sendStatus(400);
   }
 });
 
@@ -72,12 +59,8 @@ router.get("/getUpcomingEvents", async (req, res) => {
   try {
     const events = await Calander.getEventsForRangeLimit(profileId, rangeStart);
     return res.send({ events });
-  } catch (error) {
-    console.log(error);
-    return res.status(400).send({
-      message: `Something went wrong`,
-      error,
-    });
+  } catch (_e) {
+    return res.sendStatus(400);
   }
 });
 
@@ -91,14 +74,9 @@ router.get("/getEventsForRangeSpace", async (req, res) => {
       rangeEnd,
       spaceId
     );
-
     return res.send({ events });
-  } catch (error) {
-    console.log(error);
-    return res.status(400).send({
-      message: `Something went wrong`,
-      error,
-    });
+  } catch (_e) {
+    return res.sendStatus(400);
   }
 });
 

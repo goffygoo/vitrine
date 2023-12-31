@@ -83,7 +83,8 @@ const addEventForUser = async (
 ) => {
   if (startTime >= endTime) throw Error("Start time is greater than end time");
 
-  if (lockSlot) await validateLockedEventForUser(userId, startTime, endTime);
+  // TODO: validate lock requirement
+  // if (lockSlot) await validateLockedEventForUser(userId, startTime, endTime);
 
   return Event.create({
     userId,

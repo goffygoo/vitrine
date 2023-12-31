@@ -164,14 +164,12 @@ router.post("/createSpace", async (req, res) => {
       });
     }
   } catch (e) {
-    console.log(e);
     res.sendStatus(400);
   }
 });
 
 router.get("/getSpace", async (req, res) => {
   const { spaceId } = req.query;
-  console.log(spaceId);
   const space = await SpaceModel.findById(spaceId);
   return res.send({
     space,

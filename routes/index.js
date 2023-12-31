@@ -22,7 +22,7 @@ router.get("/", (_req, res) => {
 
 router.use("/auth", auth);
 router.use("/provider", verifyAccessToken, provider);
-router.use("/consumer", consumer);
+router.use("/consumer", verifyAccessToken, consumer);
 router.use("/space", verifyAccessToken, space);
 router.use("/calendar", verifyAccessToken,calendar);
 router.use("/community", community);
