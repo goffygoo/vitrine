@@ -1,3 +1,4 @@
 - Remove direct axios integration from files
 - monet resilience test
 - Calendar (EventsModal) userId -> profileId
+- caching for all events

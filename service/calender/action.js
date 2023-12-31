@@ -8,6 +8,8 @@ const getEventsForRange = async (userId, rangeStart, rangeEnd) => {
       $gte: rangeStart,
       $lte: rangeEnd,
     },
+  }).select({
+    parentId: 1
   });
   const eventsId = events.map((e) => e.parentId);
   const calls = await Call.find({ _id: { $in: eventsId } });
@@ -29,6 +31,8 @@ const getEventsForRangeInSpace = async (
       $gte: rangeStart,
       $lte: rangeEnd,
     },
+  }).select({
+    parentId: 1
   });
   const eventsId = events.map((e) => e.parentId);
   const calls = await Call.find({ _id: { $in: eventsId }, spaceId });
@@ -45,6 +49,9 @@ const getEventsForRangeLimit = async (userId, rangeStart, limit = 5) => {
       $gte: rangeStart,
     },
   })
+    .select({
+      parentId: 1
+    })
     .limit(limit)
     .sort({ startTime: 1 });
   const eventsId = events.map((e) => e.parentId);
@@ -56,9 +63,17 @@ const getEventsForRangeLimit = async (userId, rangeStart, limit = 5) => {
 };
 
 const getAllEvents = async (userId) => {
-  return await Event.find({
+  const events = await Event.find({
     userId,
+  }).select({
+    parentId: 1
   });
+  const eventsId = events.map((e) => e.parentId);
+  const calls = await Call.find({ _id: { $in: eventsId } });
+  calls.sort(
+    (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+  );
+  return calls;
 };
 
 const validateLockedEventForUser = async (userId, startTime, endTime) => {
