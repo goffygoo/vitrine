@@ -171,8 +171,22 @@ router.post("/createSpace", async (req, res) => {
 router.get("/getSpace", async (req, res) => {
   const { spaceId } = req.query;
   const space = await SpaceModel.findById(spaceId);
+  let page;
+  try {
+    page = await Page.findById(space._id);
+  } catch (e) {
+    page = {};
+  }
+  const obj = {};
+  for (const key of required) {
+    obj[key] = space[key];
+  }
+  obj.title = page.heading || "Hello App";
+  obj.description = page.subHeading || "Hello Hello";
+  obj.displayPicture = page.profileImg || "tempuser.jpg";
+  obj.coverPicture = page.banner || "tempcover.jpg";
   return res.send({
-    space,
+    space: obj,
   });
 });
 
