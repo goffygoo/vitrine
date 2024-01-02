@@ -9,40 +9,31 @@ router.get("/", (_req, res) => {
   });
 });
 
-router.get("/view", async (req, res) => {
+router.get("/view", async (_req, res) => {
   try {
-    const id = req.query.profileId;
-
-    const consumer = await Consumer.findById(id);
-    if (!consumer) throw new Error("Invalid id");
-
+    const { profileId } = res.locals.data;
+    const consumer = await Consumer.findById(profileId);
+    if (!consumer) throw new Error();
     return res.send(consumer);
-  } catch (err) {
-    return res.status(400).send({
-      success: false,
-      err,
-    });
+  } catch (_e) {
+    return res.sendStatus(400);
   }
 });
 
 router.post("/update", async (req, res) => {
-  const { id, name, address } = req.body;
-
+  const {
+    name,
+    profilePicture,
+  } = req.body;
+  const { profileId } = res.locals.data;
   try {
-    await Consumer.findByIdAndUpdate(id, {
+    await Consumer.findByIdAndUpdate(profileId, {
       ...(name && { name }),
-      ...(address && { address }),
+      ...(profilePicture && { profilePicture }),
     });
-
-    return res.send({
-      success: true,
-      message: "Updated Successfully",
-    });
-  } catch (err) {
-    return res.status(400).send({
-      success: false,
-      err,
-    });
+    return res.sendStatus(200);
+  } catch (_e) {
+    return res.sendStatus(400);
   }
 });
 

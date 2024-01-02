@@ -84,9 +84,7 @@ const refundOrder = async ({
     return Order.findByIdAndUpdate(orderId, {
         status: ORDER_STATUS.REFUNDED,
         pgPaymentId
-    })
-
-    return
+    });
 }
 
 const joinSpace = async (receipt) => {
@@ -136,7 +134,10 @@ const confirmPayment = async (pgPaymentId, checkPaymentPre) => {
     }
 
     if (paymentResponse.refundPayment) {
-        await refundOrder(params);
+        await Promise.all([
+            refundOrder(params),
+            Payment.refundPayment(pgPaymentId)
+        ])
         return {
             refundPayment: true
         }
@@ -156,6 +157,7 @@ const confirmPayment = async (pgPaymentId, checkPaymentPre) => {
 
 const OrderModule = {
     confirmPayment,
+    refundOrder
 };
 
 export default OrderModule;

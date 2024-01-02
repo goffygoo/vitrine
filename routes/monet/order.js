@@ -1,12 +1,7 @@
 import express from "express";
 import Order from "../../model/Order.js";
 import SpaceModel from "../../model/SpaceModel.js";
-import db from "../../util/db.js";
-import Subscription from "../../model/Subscription.js";
-import { ORDER_STATUS, PG_PAYMENT_STATUS } from "../../constants/index.js";
-import Consumer from "../../model/Consumer.js";
-import Payout from "../../model/Payout.js";
-import DraftOrder from "../../model/DraftOrder.js";
+import { ORDER_STATUS } from "../../constants/index.js";
 import Monet from "../../service/monet/index.js";
 import config from "../../constants/config.js";
 import Receipt from "../../model/Receipt.js";
@@ -61,16 +56,6 @@ router.post("/confirm", async (req, res) => {
 		const { razorpayPaymentId } = req.body;
 		const response = await Monet.Order.confirmPayment(razorpayPaymentId)
 		return res.send(response);
-	} catch (_e) {
-		return res.sendStatus(400);
-	}
-});
-
-router.post("/refund", async (req, res) => {
-	try {
-		const { paymentId } = req.body;
-		const refund = await Monet.Order.refundPayment(paymentId);
-		return res.send(refund);
 	} catch (_e) {
 		return res.sendStatus(400);
 	}

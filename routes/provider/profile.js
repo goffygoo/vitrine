@@ -9,17 +9,14 @@ router.get("/", (_req, res) => {
   });
 });
 
-router.get("/view", async (req, res) => {
+router.get("/view", async (_req, res) => {
   try {
     const { profileId } = res.locals.data;
     const provider = await Provider.findById(profileId);
-    if (!provider) throw new Error("Invalid id");
+    if (!provider) throw new Error();
     return res.send(provider);
-  } catch (err) {
-    return res.status(400).send({
-      success: false,
-      err,
-    });
+  } catch (_e) {
+    return res.sendStatus(400);
   }
 });
 
@@ -48,15 +45,9 @@ router.post("/update", async (req, res) => {
       ...(workingHours && { workingHours }),
       ...(offDays && { offDays }),
     });
-    return res.send({
-      success: true,
-      message: "Updated Successfully",
-    });
-  } catch (err) {
-    return res.status(400).send({
-      success: false,
-      err,
-    });
+    return res.sendStatus(200);
+  } catch (_e) {
+    return res.sendStatus(400);
   }
 });
 
