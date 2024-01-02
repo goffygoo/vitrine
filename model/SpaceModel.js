@@ -39,7 +39,7 @@ const Schema = new mongoose.Schema({
   },
   price: {
     type: Number,
-    default: Infinity,
+    default: 2000,
   },
 });
 
