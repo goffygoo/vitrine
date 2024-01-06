@@ -2,6 +2,7 @@ import express from "express";
 import Editor from "../../model/Editor.js";
 import Stream from "../../model/Stream.js";
 import { STREAM_TYPES } from "../../constants/index.js";
+import SpaceModel from "../../model/SpaceModel.js";
 
 const router = express.Router();
 
@@ -47,6 +48,9 @@ router.post("/addPost", async (req, res) => {
       ...content,
     });
 
+    await SpaceModel.findByIdAndUpdate(spaceId, {
+      $push: { streams: post._id },
+    });
     res.status(200).send({
       success: true,
       post,
