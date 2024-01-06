@@ -73,4 +73,12 @@ export const CALENDER_EVENT_SLOT_TYPES = {
 
 export const PRESENTATION_TAGS = {
   FEATURED_PAGES: 0,
-}
+};
+
+export const STREAM_TYPES = {
+  VIDEO: "VIDEO",
+  EDITOR: "EDITOR",
+  IMAGE: "IMAGE",
+  FILE: "FILE",
+  POLL: "POLL",
+};

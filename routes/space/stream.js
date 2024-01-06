@@ -1,57 +1,64 @@
 import express from "express";
 import Editor from "../../model/Editor.js";
 import Stream from "../../model/Stream.js";
+import { STREAM_TYPES } from "../../constants/index.js";
 
 const router = express.Router();
 
 router.get("/", (_req, res) => {
-	return res.send({
-		health: "OK",
-	});
+  return res.send({
+    health: "OK",
+  });
 });
 
 router.post("/getPosts", async (req, res) => {
-	const { spaceID } = req.body;
+  const { spaceId } = req.body;
+  console.log(spaceId);
+  try {
+    const posts = await Stream.find({
+      spaceId,
+    }).sort({ createdAt: -1 });
 
-	try {
-		const posts = await Stream.find({
-			spaceID,
-		});
-
-		res.status(200).send({
-			success: true,
-			posts: posts,
-		});
-	} catch (err) {
-		res.status(400).send({
-			success: false,
-			message: `Something went wrong`,
-			err,
-		});
-		console.log(err);
-	}
+    res.status(200).send({
+      success: true,
+      posts: posts,
+    });
+  } catch (err) {
+    res.status(400).send({
+      success: false,
+      message: `Something went wrong`,
+      err,
+    });
+    console.log(err);
+  }
 });
 
 router.post("/addPost", async (req, res) => {
-	const { spaceID, content } = req.body;
+  const { spaceId, type, file, editor, poll } = req.body;
+  const content = {};
+  if (type === STREAM_TYPES.EDITOR) content["editor"] = editor;
+  else if (type === STREAM_TYPES.POLL) content["poll"] = poll;
+  else content["file"] = file;
 
-	try {
-		await Stream.create({
-			...content,
-			spaceID,
-		});
+  try {
+    const post = await Stream.create({
+      spaceId,
+      type,
+      ...content,
+    });
 
-		res.status(200).send({
-			success: true,
-		});
-	} catch (err) {
-		res.status(400).send({
-			success: false,
-			message: `Something went wrong`,
-			err,
-		});
-		console.log(err);
-	}
+    res.status(200).send({
+      success: true,
+      post,
+    });
+  } catch (err) {
+    res.status(400).send({
+      success: false,
+      message: `Something went wrong`,
+      err,
+    });
+    console.log(err);
+  }
 });
 
 export default router;
