@@ -1,5 +1,4 @@
 import express from "express";
-import Editor from "../../model/Editor.js";
 import Stream from "../../model/Stream.js";
 import { STREAM_TYPES } from "../../constants/index.js";
 import SpaceModel from "../../model/SpaceModel.js";
