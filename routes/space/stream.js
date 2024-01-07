@@ -14,7 +14,6 @@ router.get("/", (_req, res) => {
 
 router.post("/getPosts", async (req, res) => {
   const { spaceId } = req.body;
-  console.log(spaceId);
   try {
     const posts = await Stream.find({
       spaceId,
