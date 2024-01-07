@@ -20,17 +20,12 @@ router.post("/getPosts", async (req, res) => {
       spaceId,
     }).sort({ createdAt: -1 });
 
-    res.status(200).send({
+    return res.status(200).send({
       success: true,
       posts: posts,
     });
   } catch (err) {
-    res.status(400).send({
-      success: false,
-      message: `Something went wrong`,
-      err,
-    });
-    console.log(err);
+    return res.sendStatus(400);
   }
 });
 
@@ -51,17 +46,12 @@ router.post("/addPost", async (req, res) => {
     await SpaceModel.findByIdAndUpdate(spaceId, {
       $push: { streams: post._id },
     });
-    res.status(200).send({
+    return res.status(200).send({
       success: true,
       post,
     });
   } catch (err) {
-    res.status(400).send({
-      success: false,
-      message: `Something went wrong`,
-      err,
-    });
-    console.log(err);
+    return res.sendStatus(400);
   }
 });
 
