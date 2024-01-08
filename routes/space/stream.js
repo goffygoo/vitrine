@@ -11,6 +11,16 @@ router.get("/", (_req, res) => {
   });
 });
 
+router.get('/post', async (req, res) => {
+  const { postId } = req.query;
+  try {
+    const post = await Stream.findById(postId);
+    return res.status(200).send(post);
+  } catch (_e) {
+    return res.sendStatus(400);
+  }
+})
+
 router.post("/getPosts", async (req, res) => {
   const { spaceId } = req.body;
   try {
