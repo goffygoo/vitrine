@@ -23,9 +23,7 @@ router.post('/', async (req, res) => {
         res.sendStatus(200);
         const checkPayment = req.body.payload.payment.entity;
         await Monet.Order.confirmPayment(undefined, checkPayment);
-    } catch (e) {
-        res.sendStatus(400);
-    }
+    } catch (e) {}
 })
 
 export default router;
