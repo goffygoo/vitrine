@@ -62,6 +62,7 @@ router.get("/getAllSpaces", validateConsumer, async (req, res) => {
       for (const key of required) {
         obj[key] = space[key];
       }
+      // TODO: remove fallback
       obj.title = page.heading || "Hello App";
       obj.description = page.subHeading || "Hello Hello";
       obj.displayPicture = page.profileImg || "tempuser.jpg";

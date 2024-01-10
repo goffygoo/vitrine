@@ -12,25 +12,29 @@ router.get("/", (_req, res) => {
   });
 });
 
+router.get('/post', async (req, res) => {
+  const { postId } = req.query;
+  try {
+    const post = await Stream.findById(postId);
+    return res.status(200).send(post);
+  } catch (_e) {
+    return res.sendStatus(400);
+  }
+})
+
 router.post("/getPosts", async (req, res) => {
   const { spaceId } = req.body;
-  console.log(spaceId);
   try {
     const posts = await Stream.find({
       spaceId,
     }).sort({ createdAt: -1 });
 
-    res.status(200).send({
+    return res.status(200).send({
       success: true,
       posts: posts,
     });
   } catch (err) {
-    res.status(400).send({
-      success: false,
-      message: `Something went wrong`,
-      err,
-    });
-    console.log(err);
+    return res.sendStatus(400);
   }
 });
 
@@ -51,17 +55,12 @@ router.post("/addPost", verifyProvider, async (req, res) => {
     await SpaceModel.findByIdAndUpdate(spaceId, {
       $push: { streams: post._id },
     });
-    res.status(200).send({
+    return res.status(200).send({
       success: true,
       post,
     });
   } catch (err) {
-    res.status(400).send({
-      success: false,
-      message: `Something went wrong`,
-      err,
-    });
-    console.log(err);
+    return res.sendStatus(400);
   }
 });
 
