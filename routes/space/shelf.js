@@ -1,8 +1,11 @@
 import express from "express";
 import Folder from "../../model/Folder.js";
 import File from "../../model/File.js";
+import { verifyProvider } from "../middleware.js";
 
 const router = express.Router();
+
+
 
 router.get("/", (_req, res) => {
   return res.send({
@@ -10,7 +13,7 @@ router.get("/", (_req, res) => {
   });
 });
 
-router.post("/addFolder", async (req, res) => {
+router.post("/addFolder", verifyProvider, async (req, res) => {
   const { spaceId, folderName } = req.body;
 
   try {
@@ -49,7 +52,7 @@ router.get("/getFolders", async (req, res) => {
   }
 });
 
-router.post("/renameFolder", async (req, res) => {
+router.post("/renameFolder", verifyProvider, async (req, res) => {
   const { folderId, folderName } = req.body;
   try {
     const folder = await Folder.findByIdAndUpdate(
@@ -74,7 +77,7 @@ router.post("/renameFolder", async (req, res) => {
   }
 });
 
-router.post("/deleteFolder", async (req, res) => {
+router.post("/deleteFolder", verifyProvider, async (req, res) => {
   const { folderId } = req.body;
 
   try {
@@ -92,7 +95,7 @@ router.post("/deleteFolder", async (req, res) => {
   }
 });
 
-router.post("/addFile", async (req, res) => {
+router.post("/addFile", verifyProvider,async (req, res) => {
   const { folderId, fileName, url } = req.body;
   try {
     const isFileAlreadyPresent = await File.find({
@@ -143,7 +146,7 @@ router.get("/getFiles", async (req, res) => {
   }
 });
 
-router.post("/renameFile", async (req, res) => {
+router.post("/renameFile", verifyProvider,async (req, res) => {
   const { fileId, fileName } = req.body;
 
   try {
@@ -163,7 +166,7 @@ router.post("/renameFile", async (req, res) => {
   }
 });
 
-router.post("/deleteFile", async (req, res) => {
+router.post("/deleteFile", verifyProvider,async (req, res) => {
   const { fileId } = req.body;
 
   try {

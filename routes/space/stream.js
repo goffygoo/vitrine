@@ -1,8 +1,8 @@
 import express from "express";
-import Editor from "../../model/Editor.js";
 import Stream from "../../model/Stream.js";
 import { STREAM_TYPES } from "../../constants/index.js";
 import SpaceModel from "../../model/SpaceModel.js";
+import { verifyProvider } from "../middleware.js";
 
 const router = express.Router();
 
@@ -34,7 +34,7 @@ router.post("/getPosts", async (req, res) => {
   }
 });
 
-router.post("/addPost", async (req, res) => {
+router.post("/addPost", verifyProvider, async (req, res) => {
   const { spaceId, type, file, editor, poll } = req.body;
   const content = {};
   if (type === STREAM_TYPES.EDITOR) content["editor"] = editor;
