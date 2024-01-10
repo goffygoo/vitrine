@@ -1,6 +1,7 @@
 import express from 'express';
 import Page from '../../service/search/model/Page.js';
 import SpaceModel from '../../model/SpaceModel.js';
+import { verifyProvider } from '../middleware.js';
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ router.get('/', (_req, res) => {
 	});
 });
 
-router.post("/createOrUpdate", async (req, res) => {
+router.post("/createOrUpdate", verifyProvider,async (req, res) => {
 	const { data } = req.body;
 	const spaceId = data.id;
 	const { price, ...pageData } = data;

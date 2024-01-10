@@ -1,4 +1,4 @@
-import { HEADERS } from "../constants/index.js";
+import { HEADERS, USER_TYPES } from "../constants/index.js";
 import jwt from "jsonwebtoken";
 import config from "../constants/config.js";
 
@@ -16,6 +16,13 @@ export const verifyAccessToken = (req, res, next) => {
   });
 };
 
-// export const verifyProfile = (req, res, next) => {
-
-// }
+export const verifyProvider = (req, res, next) => {
+  const { type } = res.locals.data;
+  if (type !== USER_TYPES.PROVIDER) {
+    return res.status(400).send({
+      success: false,
+      message: `Something went wrong`,
+    });
+  }
+  next();
+};

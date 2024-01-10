@@ -11,6 +11,7 @@ import {
 import refreshGoogleAccessToken from "../../util/integration.js";
 import User from "../../model/User.js";
 import SpaceModel from "../../model/SpaceModel.js";
+import { verifyProvider } from "../middleware.js";
 
 const router = express.Router();
 
@@ -87,7 +88,7 @@ const getGoogleMeetLink = async (req, res, next) => {
   }
 };
 
-router.post("/addCall", getGoogleMeetLink, async (req, res) => {
+router.post("/addCall", verifyProvider, getGoogleMeetLink, async (req, res) => {
   const { title, spaceId, description, startTime, endTime } = req.body;
   const { consumer: participants, provider } = await SpaceModel.findById(
     spaceId
