@@ -39,7 +39,10 @@ export const initConnection = (server) => {
     Chat.Events.fireJoinedEvents(socket.data, socket);
     socket.on("disconnect", () => {
       Cache.Socket.deleteId(socket.data.profileId, socket.id);
-      Chat.Events.fireLeaveEvents(socket.data);
+      setTimeout(() => {
+        if (!Cache.Socket.isOnline(socket.data.profileId))
+          Chat.Events.fireLeaveEvents(socket.data);
+      }, 10000);
     });
 
     Chat.Events.registerEvents(socket);
