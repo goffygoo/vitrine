@@ -29,7 +29,7 @@ const sendMessage = async (socket) => {
         (!space.consumer.includes(profileId) &&
           space.provider.toString() !== profileId)
       ) {
-        // throw new Error();
+        throw new Error();
       }
       const messageObj = await Message.create({
         spaceId,

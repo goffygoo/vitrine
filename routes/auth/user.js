@@ -156,7 +156,7 @@ router.post("/login", async (req, res) => {
     expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
   });
 
-  if (device === 'android') Cache.FCMToken.addToken(payload.userId, fcmToken);
+  if (device === 'android') Cache.FCMToken.addToken(payload.profileId, fcmToken);
 
   return res.status(201).send({
     accessToken,
@@ -415,22 +415,22 @@ router.post("/googleLogin", async (req, res) => {
     const { email, name, picture } = userData;
 
     if (device === 'web') await refreshGoogleAccessToken(refresh_token, true)
-    // {
-    //   iss: 'https://accounts.google.com',
-    //   azp: '611755391410-8cin2sd35dg0o3p04d46a7qn9fpfsjcp.apps.googleusercontent.com',
-    //   aud: '611755391410-8cin2sd35dg0o3p04d46a7qn9fpfsjcp.apps.googleusercontent.com',
-    //   sub: '101254660173627597783',
-    //   email: 'jrvineetoli52.2@gmail.com',
-    //   email_verified: true,
-    //   at_hash: 'fBZHyhvzYI3Mo_t1vKvq3Q',
-    //   name: 'Master 01',
-    //   picture: 'https://lh3.googleusercontent.com/a/AAcHTtfs9mROiwWWQ-3vJhrRKbrleFT0spkagfJqfTcCq9rM=s96-c',
-    //   given_name: 'Master',
-    //   family_name: '01',
-    //   locale: 'en-GB',
-    //   iat: 1688683022,
-    //   exp: 1688686622
-    // }
+    /* {
+      iss: 'https://accounts.google.com',
+      azp: '611755391410-8cin2sd35dg0o3p04d46a7qn9fpfsjcp.apps.googleusercontent.com',
+      aud: '611755391410-8cin2sd35dg0o3p04d46a7qn9fpfsjcp.apps.googleusercontent.com',
+      sub: '101254660173627597783',
+      email: 'jrvineetoli52.2@gmail.com',
+      email_verified: true,
+      at_hash: 'fBZHyhvzYI3Mo_t1vKvq3Q',
+      name: 'Master 01',
+      picture: 'https://lh3.googleusercontent.com/a/AAcHTtfs9mROiwWWQ-3vJhrRKbrleFT0spkagfJqfTcCq9rM=s96-c',
+      given_name: 'Master',
+      family_name: '01',
+      locale: 'en-GB',
+      iat: 1688683022,
+      exp: 1688686622
+    } */
 
     let user = await User.findOne({ email });
 
@@ -505,7 +505,7 @@ router.post("/googleLogin", async (req, res) => {
       expiresIn: ACCESS_TOKEN_EXPIRE_TIME,
     });
 
-    if (device === 'android') Cache.FCMToken.addToken(payload.userId, fcmToken);
+    if (device === 'android') Cache.FCMToken.addToken(payload.profileId, fcmToken);
 
     return res.status(200).send({
       accessToken,

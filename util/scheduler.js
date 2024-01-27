@@ -15,7 +15,5 @@ const scheduleNotificationEvents = () => {
 };
 
 export default function initScheduler() {
-	scheduleSubscriptionEndNotification();
-	scheduleSubscriptionDelete();
 	scheduleNotificationEvents();
 }

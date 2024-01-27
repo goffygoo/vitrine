@@ -1,19 +1,16 @@
-const TokenTable = new Map();
+const TokenTable = {};
 
-const getTokens = userId => {
-    return TokenTable.get(userId) || [];
+const getTokens = profileId => {
+    return TokenTable[profileId] || new Set();
 }
 
-const addToken = (userId, token) => {
-    const previousValue = getTokens(userId);
-    if (![previousValue].includes(token))
-        TokenTable.set(userId, [...previousValue, token]);
+const addToken = (profileId, token) => {
+    if (!TokenTable[profileId]) TokenTable[profileId] = new Set();
+    TokenTable[profileId].add(token);
 }
 
-const deleteToken = (userId, token) => {
-    const newValue = getIds(userId).filter(id => id !== token);
-    if (newValue.length === 0) TokenTable.delete(userId);
-    else TokenTable.set(userId, newValue);
+const deleteToken = (profileId, token) => {
+    TokenTable[profileId]?.delete(token);
 }
 
 const clear = () => {

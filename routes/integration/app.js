@@ -12,8 +12,8 @@ router.get("/", (_req, res) => {
 
 router.post("/init", verifyAccessToken, (req, res) => {
     const { fcmToken } = req.body;
-    const { userId } = res.locals.data;
-    Cache.FCMToken.addToken(userId, fcmToken);
+    const { profileId } = res.locals.data;
+    Cache.FCMToken.addToken(profileId, fcmToken);
     res.sendStatus(200);
 })
 
