@@ -4,7 +4,8 @@ import Cache from "../cache/index.js";
 import admin from 'firebase-admin';
 
 const sendFCMNotifs = async (profileId, title, body) => {
-	const tokens = Cache.FCMToken.getTokens(profileId);
+	const tokens = [...Cache.FCMToken.getTokens(profileId)];
+	if (!tokens || tokens.length === 0) return;
 	await admin.messaging().sendEachForMulticast({
 		tokens,
 		notification: {
@@ -26,7 +27,7 @@ const notifyImmediately = (event, data) => {
 
 const notifyUserImmediately = (event, data, profileId) => {
 	emitToUser(profileId, event, data);
-	sendFCMNotifs(profileId, data.senderName, data.message);
+	sendFCMNotifs(profileId, data.senderName, data.message.message);
 };
 
 const createEventLocally = (startTime, event, data) => {

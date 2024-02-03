@@ -57,7 +57,7 @@ const sendMessage = async (socket) => {
           spaceTitle: space.title,
           message: messageObj,
         },
-        space.provider
+        space.provider.toString()
       );
     } catch (e) {}
   });
