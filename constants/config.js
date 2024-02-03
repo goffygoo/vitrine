@@ -1,6 +1,7 @@
 export default {
 	FILE_SERVER: "http://localhost:5002",
 	SEARCH_ENGINE: "http://127.0.0.1:7700",
+	MONGO_URL: "--MONGO_URL--",
 	GOOGLE_CLIENT_ID:
 		"--GOOGLE_CLIENT_ID--",
 	GOOGLE_CLIENT_SECRET: "--GOOGLE_CLIENT_SECRET--",

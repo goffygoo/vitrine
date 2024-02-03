@@ -1,10 +1,9 @@
 import mongoose from 'mongoose';
+import config from '../constants/config';
 
-const USER = 'devuser';
-const PASSWORD = '3ObrQv4voZcbi5EH';
-const URL = `mongodb+srv://${USER}:${PASSWORD}@cluster0.srqlkqk.mongodb.net/?retryWrites=true&w=majority`;
+const { MONGO_URL } = config;
 
-mongoose.connect(URL, { dbName: 'projectX' });
+mongoose.connect(MONGO_URL, { dbName: 'projectX' });
 
 const db = mongoose.connection;
 
