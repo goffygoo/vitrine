@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import config from '../constants/config';
+import config from '../constants/config.js';
 
 const { MONGO_URL } = config;
 
