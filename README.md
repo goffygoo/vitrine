@@ -34,3 +34,11 @@
 3. ```npm start```
 
 
+
+## Other affiliated repos
+* [mobile-client](https://github.com/goffygoo/vitrine-client-mobile)
+* [client-web](https://github.com/redscool/vitrine-client-web)
+* [file-server](https://github.com/goffygoo/vitrine-file-server)
+
+
+
